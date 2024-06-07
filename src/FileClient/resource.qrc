@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>darkblue.qss</file>
+    </qresource>
+</RCC>
