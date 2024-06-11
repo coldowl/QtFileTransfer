@@ -72,7 +72,7 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="0" column="0">
-           <widget class="QTextEdit" name="textEdit_2"/>
+           <widget class="QTextBrowser" name="textBrowser"/>
           </item>
          </layout>
         </widget>
@@ -110,7 +110,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actUpload"/>
   </widget>
   <widget class="QToolBar" name="toolBar_2">
    <property name="windowTitle">
@@ -122,8 +121,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actDisconnect"/>
    <addaction name="actListen"/>
+   <addaction name="actDisconnect"/>
+   <addaction name="actUpload"/>
   </widget>
   <action name="actConnect">
    <property name="text">

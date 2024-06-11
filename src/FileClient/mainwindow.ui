@@ -20,7 +20,7 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="widget">
        <attribute name="title">
         <string>客户端</string>
        </attribute>
@@ -82,7 +82,7 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="0" column="0">
-               <widget class="QTextEdit" name="textEdit_2"/>
+               <widget class="QTextBrowser" name="textBrowser"/>
               </item>
              </layout>
             </widget>
@@ -147,6 +147,7 @@
    </attribute>
    <addaction name="actConnect"/>
    <addaction name="actDisconnect"/>
+   <addaction name="actDownload"/>
   </widget>
   <action name="actConnect">
    <property name="text">

@@ -22,6 +22,7 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QTreeView>
@@ -57,7 +58,7 @@ public:
     QTextEdit *datailTextEdit;
     QGroupBox *groupBox_5;
     QGridLayout *gridLayout_3;
-    QTextEdit *textEdit_2;
+    QTextBrowser *textBrowser;
     QStatusBar *statusbar;
     QMenuBar *menubar;
     QMenu *menu;
@@ -142,10 +143,10 @@ public:
         groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
         gridLayout_3 = new QGridLayout(groupBox_5);
         gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
-        textEdit_2 = new QTextEdit(groupBox_5);
-        textEdit_2->setObjectName(QString::fromUtf8("textEdit_2"));
+        textBrowser = new QTextBrowser(groupBox_5);
+        textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
 
-        gridLayout_3->addWidget(textEdit_2, 0, 0, 1, 1);
+        gridLayout_3->addWidget(textBrowser, 0, 0, 1, 1);
 
         splitter_2->addWidget(groupBox_5);
         splitter_3->addWidget(splitter_2);
@@ -172,9 +173,9 @@ public:
 
         menubar->addAction(menu->menuAction());
         menu->addAction(actionabout);
-        toolBar->addAction(actUpload);
-        toolBar_2->addAction(actDisconnect);
         toolBar_2->addAction(actListen);
+        toolBar_2->addAction(actDisconnect);
+        toolBar_2->addAction(actUpload);
 
         retranslateUi(MainWindow);
 

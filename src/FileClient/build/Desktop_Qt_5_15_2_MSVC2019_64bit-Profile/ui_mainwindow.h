@@ -22,6 +22,9 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QTabWidget>
+#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QTreeView>
@@ -40,6 +43,9 @@ public:
     QAction *actionabout;
     QWidget *centralwidget;
     QGridLayout *gridLayout_5;
+    QTabWidget *tabWidget;
+    QWidget *widget;
+    QGridLayout *gridLayout_6;
     QSplitter *splitter_4;
     QSplitter *splitter_3;
     QSplitter *splitter;
@@ -56,11 +62,15 @@ public:
     QTextEdit *datailTextEdit;
     QGroupBox *groupBox_5;
     QGridLayout *gridLayout_3;
-    QTextEdit *textEdit_2;
+    QTextBrowser *textBrowser;
+    QWidget *tab_2;
+    QGridLayout *gridLayout_7;
+    QTableWidget *tableWidget;
     QStatusBar *statusbar;
     QMenuBar *menubar;
     QMenu *menu;
     QToolBar *toolBar;
+    QToolBar *toolBar_2;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -83,7 +93,13 @@ public:
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout_5 = new QGridLayout(centralwidget);
         gridLayout_5->setObjectName(QString::fromUtf8("gridLayout_5"));
-        splitter_4 = new QSplitter(centralwidget);
+        tabWidget = new QTabWidget(centralwidget);
+        tabWidget->setObjectName(QString::fromUtf8("tabWidget"));
+        widget = new QWidget();
+        widget->setObjectName(QString::fromUtf8("widget"));
+        gridLayout_6 = new QGridLayout(widget);
+        gridLayout_6->setObjectName(QString::fromUtf8("gridLayout_6"));
+        splitter_4 = new QSplitter(widget);
         splitter_4->setObjectName(QString::fromUtf8("splitter_4"));
         splitter_4->setOrientation(Qt::Vertical);
         splitter_3 = new QSplitter(splitter_4);
@@ -135,16 +151,30 @@ public:
         groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
         gridLayout_3 = new QGridLayout(groupBox_5);
         gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
-        textEdit_2 = new QTextEdit(groupBox_5);
-        textEdit_2->setObjectName(QString::fromUtf8("textEdit_2"));
+        textBrowser = new QTextBrowser(groupBox_5);
+        textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
 
-        gridLayout_3->addWidget(textEdit_2, 0, 0, 1, 1);
+        gridLayout_3->addWidget(textBrowser, 0, 0, 1, 1);
 
         splitter_2->addWidget(groupBox_5);
         splitter_3->addWidget(splitter_2);
         splitter_4->addWidget(splitter_3);
 
-        gridLayout_5->addWidget(splitter_4, 0, 0, 1, 1);
+        gridLayout_6->addWidget(splitter_4, 0, 0, 1, 1);
+
+        tabWidget->addTab(widget, QString());
+        tab_2 = new QWidget();
+        tab_2->setObjectName(QString::fromUtf8("tab_2"));
+        gridLayout_7 = new QGridLayout(tab_2);
+        gridLayout_7->setObjectName(QString::fromUtf8("gridLayout_7"));
+        tableWidget = new QTableWidget(tab_2);
+        tableWidget->setObjectName(QString::fromUtf8("tableWidget"));
+
+        gridLayout_7->addWidget(tableWidget, 0, 0, 1, 1);
+
+        tabWidget->addTab(tab_2, QString());
+
+        gridLayout_5->addWidget(tabWidget, 0, 0, 1, 1);
 
         MainWindow->setCentralWidget(centralwidget);
         statusbar = new QStatusBar(MainWindow);
@@ -159,16 +189,20 @@ public:
         toolBar = new QToolBar(MainWindow);
         toolBar->setObjectName(QString::fromUtf8("toolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, toolBar);
+        toolBar_2 = new QToolBar(MainWindow);
+        toolBar_2->setObjectName(QString::fromUtf8("toolBar_2"));
+        MainWindow->addToolBar(Qt::TopToolBarArea, toolBar_2);
 
         menubar->addAction(menu->menuAction());
         menu->addAction(actionabout);
-        toolBar->addAction(actConnect);
-        toolBar->addAction(actDisconnect);
-        toolBar->addAction(actUpload);
-        toolBar->addAction(actDownload);
-        toolBar->addAction(actDelete);
+        toolBar_2->addAction(actConnect);
+        toolBar_2->addAction(actDisconnect);
+        toolBar_2->addAction(actDownload);
 
         retranslateUi(MainWindow);
+
+        tabWidget->setCurrentIndex(0);
+
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -198,8 +232,11 @@ public:
         groupBox_3->setTitle(QCoreApplication::translate("MainWindow", "\345\210\227\350\241\250\346\230\276\347\244\272", nullptr));
         groupBox_4->setTitle(QCoreApplication::translate("MainWindow", "\350\257\246\347\273\206\344\277\241\346\201\257", nullptr));
         groupBox_5->setTitle(QCoreApplication::translate("MainWindow", "\346\216\247\345\210\266\345\217\260", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(widget), QCoreApplication::translate("MainWindow", "\345\256\242\346\210\267\347\253\257", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(tab_2), QCoreApplication::translate("MainWindow", "\346\234\215\345\212\241\345\231\250", nullptr));
         menu->setTitle(QCoreApplication::translate("MainWindow", "\345\270\256\345\212\251", nullptr));
         toolBar->setWindowTitle(QCoreApplication::translate("MainWindow", "toolBar", nullptr));
+        toolBar_2->setWindowTitle(QCoreApplication::translate("MainWindow", "toolBar_2", nullptr));
     } // retranslateUi
 
 };
