@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "tcpserver.h"
+#include "custommessagehandler.h"
 
 #include <QDir>
 #include <QModelIndex>
@@ -22,6 +23,12 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // 将全局指针指向textBrowser
+    G_TextBrowser = ui->textBrowser;
+
+    // 安装自定义消息处理器
+    qInstallMessageHandler(customMessageHandler);
 
     m_tcpserver = new TcpServer(this);
 
