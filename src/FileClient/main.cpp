@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-// #include "tcpclient.h"
 #include <QFile>
 #include <QTextStream>
 #include <QApplication>

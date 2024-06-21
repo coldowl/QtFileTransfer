@@ -23,7 +23,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_TcpClient_t {
     QByteArrayData data[3];
-    char stringdata0[32];
+    char stringdata0[23];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -33,11 +33,11 @@ struct qt_meta_stringdata_TcpClient_t {
 static const qt_meta_stringdata_TcpClient_t qt_meta_stringdata_TcpClient = {
     {
 QT_MOC_LITERAL(0, 0, 9), // "TcpClient"
-QT_MOC_LITERAL(1, 10, 20), // "handleServerResponse"
-QT_MOC_LITERAL(2, 31, 0) // ""
+QT_MOC_LITERAL(1, 10, 11), // "onReadyRead"
+QT_MOC_LITERAL(2, 22, 0) // ""
 
     },
-    "TcpClient\0handleServerResponse\0"
+    "TcpClient\0onReadyRead\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -69,7 +69,7 @@ void TcpClient::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
         auto *_t = static_cast<TcpClient *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->handleServerResponse(); break;
+        case 0: _t->onReadyRead(); break;
         default: ;
         }
     }

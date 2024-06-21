@@ -123,7 +123,7 @@
    </attribute>
    <addaction name="actListen"/>
    <addaction name="actDisconnect"/>
-   <addaction name="actUpload"/>
+   <addaction name="actChooseFolder"/>
   </widget>
   <action name="actConnect">
    <property name="text">
@@ -179,6 +179,14 @@
    </property>
    <property name="toolTip">
     <string>开始监听</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actChooseFolder">
+   <property name="text">
+    <string>选择目录</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>

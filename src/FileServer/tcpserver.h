@@ -1,50 +1,72 @@
-// #ifndef TCPSERVER_H
-// #define TCPSERVER_H
+#ifndef TCPSERVER_H
+#define TCPSERVER_H
 
-// #include <QTcpServer>
-// #include <QTcpSocket>
-// #include <QFile>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QDir>
+#include <QFileInfoList>
+#include <QDataStream>
 
-
-// enum MsgType{
-//     FileInfo,  //  文件信息，如文件名，文件大小等信息
-//     FileData  //  文件数据，即文件内容
-// };
-
-// class TcpServer : public QTcpServer
-// {
-//     Q_OBJECT
-
-// public:
-//     explicit TcpServer(QTcpServer *parent = nullptr);
-//     ~TcpServer();
-
-//     bool startServer();
-//     bool closeServer();
-
-// public slots:
-//     void delNewConnect();
-//     void dealMsg(QTcpSocket *socket);
-
-// private:
-//     void transferFileData(QTcpSocket *socket);
-//     void transferFileInfo(QTcpSocket *socket);
-//     QByteArray getFileContent(QString filePath);
-//     bool checkFile(QString filePath);
-
-// private:
-//     QTcpServer* m_tcpServer;
-
-// private:
-//     qint64 typeMsgSize;
-//     qint64 m_totalBytes;
-//     qint64 m_sendFileSize;
-//     qint64 m_fileInfoWriteBytes;
-//     QString m_sendFilePath;
-//     QFile m_localFile;
-
-// };
+// const int DATA_BLOCK_SIZE = 1024;
+// const quint16 REQUEST_UPLOAD_FILE = 0x0001;
+// const quint16 UPLOAD_FILE_OK = 0x0002;
+// const quint16 UPLOAD_FILE = 0x0003;
+// const quint16 UPLOAD_COMPLETE = 0x0004;
 
 
+// 服务器类继承自QTcpServer
+class TcpServer : public QTcpServer {
+    Q_OBJECT
 
-// #endif // TCPSERVER_H
+public:
+    explicit TcpServer(QObject *parent = nullptr);
+
+    // 自定义客户端可操作的文件夹
+    void setOpenFolder(const QString &dir);
+
+
+private slots:
+    // 处理新连接
+    void onNewConnection();
+
+    // 处理客户端的请求
+    void onReadyRead();
+
+    // 发送文件列表给客户端
+    void sendFileList();
+
+    // 发送文件树给客户端
+    void sendFileTree(const QDir &dir);
+
+    // 发送文件目录给客户端
+    void sendDirectory(QDataStream &out, const QDir &dir);
+
+    // 处理文件上传请求
+    void responseUpload();
+
+    // 接收上传文件
+    void receiveUpload(QDataStream &in);
+
+    // 处理文件下载请求
+    void responseDownload();
+
+    // 发送下载文件
+    void sendDownload();
+
+private:
+    QDir m_openPath; // 开放文件夹给客户端
+    QTcpSocket *m_socket = nullptr;
+
+    // 上传文件的文件信息
+    QString m_uploadFileName = "";
+    qint64 m_uploadFileSize = 0;
+    qint64 m_uploadBytesReceived = 0;
+    QString m_uploadFileHash = "";
+
+    // 下载文件的文件信息
+    QString m_downloadFileName = "";
+    QString m_downloadFilePath = "";
+};
+
+
+#endif // TCPSERVER_H

@@ -236,7 +236,6 @@ Makefile: ..\..\FileServer.pro E:\QT\5.15.2\msvc2019_64\mkspecs\win32-msvc\qmake
 		E:\QT\5.15.2\msvc2019_64\mkspecs\features\qt_config.prf \
 		E:\QT\5.15.2\msvc2019_64\mkspecs\win32-msvc\qmake.conf \
 		E:\QT\5.15.2\msvc2019_64\mkspecs\features\spec_post.prf \
-		.qmake.stash \
 		E:\QT\5.15.2\msvc2019_64\mkspecs\features\exclusive_builds.prf \
 		E:\QT\5.15.2\msvc2019_64\mkspecs\common\msvc-version.conf \
 		E:\QT\5.15.2\msvc2019_64\mkspecs\features\toolchain.prf \
@@ -267,6 +266,7 @@ Makefile: ..\..\FileServer.pro E:\QT\5.15.2\msvc2019_64\mkspecs\win32-msvc\qmake
 		E:\QT\5.15.2\msvc2019_64\lib\Qt5Network.prl \
 		E:\QT\5.15.2\msvc2019_64\lib\Qt5Core.prl \
 		E:\QT\5.15.2\msvc2019_64\lib\qtmain.prl \
+		.qmake.stash \
 		E:\QT\5.15.2\msvc2019_64\mkspecs\features\build_pass.prf \
 		E:\QT\5.15.2\msvc2019_64\lib\Qt5Widgetsd.prl \
 		E:\QT\5.15.2\msvc2019_64\lib\Qt5Guid.prl \
@@ -426,7 +426,6 @@ E:\QT\5.15.2\msvc2019_64\mkspecs\features\qt_functions.prf:
 E:\QT\5.15.2\msvc2019_64\mkspecs\features\qt_config.prf:
 E:\QT\5.15.2\msvc2019_64\mkspecs\win32-msvc\qmake.conf:
 E:\QT\5.15.2\msvc2019_64\mkspecs\features\spec_post.prf:
-.qmake.stash:
 E:\QT\5.15.2\msvc2019_64\mkspecs\features\exclusive_builds.prf:
 E:\QT\5.15.2\msvc2019_64\mkspecs\common\msvc-version.conf:
 E:\QT\5.15.2\msvc2019_64\mkspecs\features\toolchain.prf:
@@ -457,6 +456,7 @@ E:\QT\5.15.2\msvc2019_64\lib\Qt5Gui.prl:
 E:\QT\5.15.2\msvc2019_64\lib\Qt5Network.prl:
 E:\QT\5.15.2\msvc2019_64\lib\Qt5Core.prl:
 E:\QT\5.15.2\msvc2019_64\lib\qtmain.prl:
+.qmake.stash:
 E:\QT\5.15.2\msvc2019_64\mkspecs\features\build_pass.prf:
 E:\QT\5.15.2\msvc2019_64\lib\Qt5Widgetsd.prl:
 E:\QT\5.15.2\msvc2019_64\lib\Qt5Guid.prl:

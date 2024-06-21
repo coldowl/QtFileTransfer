@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "tcpclient.h"
 
 #include <QDir>
 #include <QModelIndex>
@@ -12,7 +13,7 @@
 #include <QLineEdit>
 #include <QHostAddress>
 #include <QMessageBox>
-#include <QDataStream>//
+#include <QDataStream>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -21,23 +22,12 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    //
-    myFile = new MyFileInfo(this);
-    m_downloadPath = QCoreApplication::applicationDirPath() + "/../下载";
-    isDownloading = false;
-    QDir dir;
-    if(!dir.exists(m_downloadPath)) {
-        dir.mkdir(m_downloadPath);
-    }
-
-    // connectSigSlots();
-    //
-
     model = new QFileSystemModel(this);
     model->setRootPath(QDir::currentPath());
 
     ui->treeView->setModel(model);
     ui->treeView->setHeaderHidden(true);
+    ui->treeView_2->setHeaderHidden(true);
 
     QList<int> columnsToHide = {1, 2, 3};  // 定义一个需要隐藏的列的列表
     for (int column : columnsToHide) {  // 使用循环来隐藏列
@@ -69,14 +59,12 @@ MainWindow::MainWindow(QWidget *parent)
     spinPortEdit->setValue(5555);
     ui->toolBar->addWidget(spinPortEdit);
 
-    ui->toolBar->addSeparator();
-    ui->toolBar->addWidget(new QLabel("下载进度: "));
-    downloadProgressBar = new QProgressBar();
-    downloadProgressBar->setValue(0);
-    ui->toolBar->addWidget(downloadProgressBar);
+    // ui->toolBar->addSeparator();
+    // ui->toolBar->addWidget(new QLabel("下载进度: "));
+    // downloadProgressBar = new QProgressBar();
+    // downloadProgressBar->setValue(0);
+    // ui->toolBar->addWidget(downloadProgressBar);
 
-
-    connectToServer();
 
     // treeView中选择文件夹，listView展示文件夹中的内容
     connect(ui->treeView, &QTreeView::clicked, this, [=](const QModelIndex &index) {
@@ -86,6 +74,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 连接listView的clicked信号到显示详细信息的槽函数
     connect(ui->listView, &QListView::clicked, this, &MainWindow::onListViewClicked);
+
+    // 连接服务器listview的clicked信号到显示详细信息的槽函数
+    connect(ui->treeView, &QListView::clicked, this, &MainWindow::onListViewClicked);
 
 
     // 当选中listView或者treeview中的项目，pathLineEdit 实时显示当前文件路径
@@ -97,23 +88,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->listView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
 
-
-    //connectSigSlots
-    connect(ui->actDownload, &QAction::triggered, this, &MainWindow::downLoadFile);
-    connect(ui->actConnect, &QAction::triggered, this, [=](){
-        connectToServer(m_tcpSocket);
-    });
-    connect(ui->actDisconnect, &QAction::triggered, this, [=](){
-        m_tcpSocket->disconnectFromHost();
-        ui->textBrowser->append("与服务器断开连接...");
-    });
-    // connect(ui->openFolder, &QPushButton::clicked, this, [=]() {
-    //     QString path = QCoreApplication::applicationDirPath()+"/../下载";
-    //     QDesktopServices::openUrl(QUrl("file:"+path, QUrl::TolerantMode));
-    // });
-    // connect(ui->resetProgress, &QPushButton::clicked, [=]() {
-    //     ui->progressBar->setValue(0);
-    // }
 }
 
 MainWindow::~MainWindow()
@@ -184,132 +158,75 @@ void MainWindow::onListViewClicked(const QModelIndex &index)
 
 }
 
-//
-void MainWindow::downLoadFile()
-{
-    if(m_tcpSocket->state() != QAbstractSocket::ConnectedState) {
-        if(!connectToServer(m_tcpSocket)) {
-            return;
-        }
-    }
-    QByteArray data;
-    int typeMsg = MsgType::FileInfo;
-    QDataStream out(&data, QIODevice::WriteOnly);
-    //m_loadProgressBar->show();
-    //发送要下载的文件列表路径
-    out << typeMsg;
-    ui->textBrowser->append(QString("发送消息：%1").arg(typeMsg));
-    m_tcpSocket->write(data);
-}
 
-void MainWindow::readServerMsg()
-{
-    //如果正在下载，则收到的全是文件数据，读取即可
-    if(isDownloading) {
-        fileDataRead();
-        return;
-    }
-    qDebug()<< ".............readServerMsg................";
+void MainWindow::on_actConnect_triggered(){
 
-    QDataStream in(m_tcpSocket);
-    in.setVersion(QDataStream::Qt_5_12);
-    int type;
-    in >> type; //判断消息类型
+    bool isConnect;
 
-    if(type == MsgType::FileInfo) {
-        fileInfoRead();
-        isDownloading = true;
-    }
-    else {
-        qDebug()<<"收到其他消息类型！！！type："<<type;
+    m_tcpclient = new TcpClient(ui->treeView_2);
+    isConnect = m_tcpclient->connectToServer(lineServerIp->text(), spinPortEdit->value()); // 连接到服务器
+
+    if(isConnect){
+        ui->actConnect->setEnabled(false);
+        ui->actDisconnect->setEnabled(true);
+        ui->actUpload->setEnabled(true);
+        ui->actDownload->setEnabled(true);
+        ui->actDelete->setEnabled(true);
+        ui->textBrowser->append(QString("已连接 %1:%2 ").arg(lineServerIp->text()).arg(spinPortEdit->value()));
+    }else{
+        ui->textBrowser->append("连接失败！");
     }
 }
 
-void MainWindow::fileInfoRead()
-{
-    QDataStream in(m_tcpSocket);
-    in.setVersion(QDataStream::Qt_5_12);
 
-    qDebug()<<"文件信息读取on_fileInfoRead......";
-    // 接收文件大小，数据总大小信息和文件名大小,文件名信息
-    in >> myFile->fileName >> myFile->fileSize;
 
-    // 获取文件名，建立文件
-    ui->textBrowser->append(QString("下载文件 %1, 文件大小：%2").arg(myFile->fileName).arg(myFile->fileSize));
-    QString filePath = m_downloadPath + "/" + myFile->fileName;
-    myFile->localFile.setFileName(filePath);
-    // 打开文件，准备写入
-    if(!myFile->localFile.open(QIODevice::WriteOnly)) {
-        qDebug()<<"文件打开失败！";
-    }
-    //文件信息获取完成，接着获取文件数据
-    QByteArray data;
-    int typeMsg = MsgType::FileData;
-    QDataStream out(&data, QIODevice::WriteOnly);
-    //m_loadProgressBar->show();
-    //发送要下载的文件列表路径
-    out << typeMsg;
-    m_tcpSocket->write(data);
+void MainWindow::on_actDisconnect_triggered(){
+    m_tcpclient->disconnectFromServer();
+    ui->textBrowser->append("断开连接！");
+    ui->actConnect->setEnabled(true);
+    ui->actDisconnect->setEnabled(false);
 }
 
 
-void MainWindow::fileDataRead()
+void MainWindow::on_actUpload_triggered()
 {
-    qint64 readBytes = m_tcpSocket->bytesAvailable();
-    if(readBytes <0) return;
+    m_tcpclient->requestUpload(ui->pathLineEdit->text());
+}
 
-    int progress = 0;
-    // 如果接收的数据大小小于要接收的文件大小，那么继续写入文件
-    if(myFile->bytesReceived < myFile->fileSize) {
-        // 返回等待读取的传入字节数
-        QByteArray data = m_tcpSocket->read(readBytes);
-        myFile->bytesReceived+=readBytes;
-        ui->textBrowser->append(QString("接收进度：%1/%2(字节)").arg(myFile->bytesReceived).arg(myFile->fileSize));
-        progress =static_cast<int>(myFile->bytesReceived*100/myFile->fileSize);
-        myFile->progressByte = myFile->bytesReceived;
-        myFile->progressStr = QString("%1").arg(progress);
-        downloadProgressBar->setValue(progress);
-        myFile->localFile.write(data);
-    }
 
-    // 接收数据完成时
-    if (myFile->bytesReceived==myFile->fileSize){
-        ui->textBrowser->append(tr("接收文件[%1]成功！").arg(myFile->fileName));
-        progress = 100;
-        myFile->localFile.close();
+void MainWindow::on_pushButton_clicked()
+{
+    m_tcpclient->requestFileTree();
+}
 
-        ui->textBrowser->append(QString("接收进度：%1/%2（字节）").arg(myFile->bytesReceived).arg(myFile->fileSize));
-        myFile->progressByte = myFile->bytesReceived;
-        downloadProgressBar->setValue(progress);
-        isDownloading = false;
-        myFile->initReadData();
-    }
 
-    if (myFile->bytesReceived > myFile->fileSize){
-        qDebug()<<"myFile->bytesReceived > m_fileSize";
+void MainWindow::on_actDelete_triggered(){
+    QModelIndex index = ui->treeView_2->currentIndex();
+    qDebug() << "Triggered download, current index:" << index;
+    if (index.isValid()) {
+        QAbstractItemModel *model = ui->treeView_2->model();
+        QString fileName = model->data(index, Qt::DisplayRole).toString();
+        qDebug() << "Selected file:" << fileName;
+        // 调用请求删除函数并传递文件名作为参数
+        m_tcpclient->requestDelete(fileName);
+    } else {
+        qDebug() << "No file selected";
     }
 }
 
-void MainWindow::connectToServer()
-{
-    m_tcpSocket = new QTcpSocket(this);
-    connectToServer(m_tcpSocket);
-    connect(m_tcpSocket, &QTcpSocket::readyRead, this, &MainWindow::readServerMsg);
-    connect(m_tcpSocket, &QTcpSocket::disconnected, this, [=]() {
-        ui->textBrowser->append(QString("与服务器断开连接：原因：%1").arg(m_tcpSocket->errorString()));
-        //isConnected = false;
-    });
-}
 
-bool MainWindow::connectToServer(QTcpSocket *socket)
-{
-    socket->connectToHost(lineServerIp->text(),spinPortEdit->text().toInt());
-    if(!socket->waitForConnected(2*1000)) {
-        QMessageBox::warning(this, "警告", "服务器连接失败，原因："+m_tcpSocket->errorString());
-        return false;
+void MainWindow::on_actDownload_triggered() {
+    QModelIndex index = ui->treeView_2->currentIndex();
+    qDebug() << "Triggered download, current index:" << index;
+    if (index.isValid()) {
+        QAbstractItemModel *model = ui->treeView_2->model();
+        QString fileName = model->data(index, Qt::DisplayRole).toString();
+        qDebug() << "Selected file:" << fileName;
+        // 调用请求下载函数并传递文件名作为参数
+        m_tcpclient->requestDownload(fileName);
+    } else {
+        qDebug() << "No file selected";
     }
-    QMessageBox::information(this, "提示", "服务器连接成功！");
-    ui->textBrowser->append("服务器连接成功！");
-
-    return true;
 }
+
+

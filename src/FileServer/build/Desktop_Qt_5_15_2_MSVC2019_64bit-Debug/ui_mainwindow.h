@@ -40,6 +40,7 @@ public:
     QAction *actDelete;
     QAction *actionabout;
     QAction *actListen;
+    QAction *actChooseFolder;
     QWidget *centralwidget;
     QGridLayout *gridLayout_5;
     QSplitter *splitter_4;
@@ -87,6 +88,9 @@ public:
         actListen = new QAction(MainWindow);
         actListen->setObjectName(QString::fromUtf8("actListen"));
         actListen->setMenuRole(QAction::NoRole);
+        actChooseFolder = new QAction(MainWindow);
+        actChooseFolder->setObjectName(QString::fromUtf8("actChooseFolder"));
+        actChooseFolder->setMenuRole(QAction::NoRole);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout_5 = new QGridLayout(centralwidget);
@@ -175,7 +179,7 @@ public:
         menu->addAction(actionabout);
         toolBar_2->addAction(actListen);
         toolBar_2->addAction(actDisconnect);
-        toolBar_2->addAction(actUpload);
+        toolBar_2->addAction(actChooseFolder);
 
         retranslateUi(MainWindow);
 
@@ -207,6 +211,7 @@ public:
 #if QT_CONFIG(tooltip)
         actListen->setToolTip(QCoreApplication::translate("MainWindow", "\345\274\200\345\247\213\347\233\221\345\220\254", nullptr));
 #endif // QT_CONFIG(tooltip)
+        actChooseFolder->setText(QCoreApplication::translate("MainWindow", "\351\200\211\346\213\251\347\233\256\345\275\225", nullptr));
         groupBox_2->setTitle(QCoreApplication::translate("MainWindow", "\346\226\207\344\273\266\347\233\256\345\275\225", nullptr));
         groupBox_3->setTitle(QCoreApplication::translate("MainWindow", "\345\210\227\350\241\250\346\230\276\347\244\272", nullptr));
         groupBox_4->setTitle(QCoreApplication::translate("MainWindow", "\350\257\246\347\273\206\344\277\241\346\201\257", nullptr));
