@@ -13,6 +13,24 @@
 // const quint16 UPLOAD_FILE = 0x0003;
 // const quint16 UPLOAD_COMPLETE = 0x0004;
 
+//服务器发出的指令0x1开头
+#define FILE_TREE 0x1001
+#define FILE_LIST 0x1002
+#define UPLOAD_FILE_READY 0x1003
+#define UPLOAD_COMPLETE 0x1004
+#define DOWNLOAD_FILE_READY 0x1005
+#define DOWNLOAD_FILE 0x1006
+#define RECEIVE_FILE_READY 0x1007
+
+//客户端发出的指令0x2开头
+#define GET_FILE_TREE 0x2001
+#define GET_FILE_LIST 0x2002
+#define REQUEST_UPLOAD_FILE 0x2003
+#define REQUEST_DOWNLOAD_FILE 0x2004
+#define REQUEST_DELETE_FILE 0x2005
+#define UPLOAD_FILE 0x2006
+#define DOWNLOAD_COMPLETE 0x2007
+#define DOWNLOAD_FILE_REJECT 0x2008
 
 // 服务器类继承自QTcpServer
 class TcpServer : public QTcpServer {

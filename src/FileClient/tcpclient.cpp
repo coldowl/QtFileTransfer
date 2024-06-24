@@ -48,13 +48,14 @@ bool TcpClient::disconnectFromServer() {
 // 读取服务器发送的数据
 void TcpClient::onReadyRead() {
     QDataStream in(m_socket);
+    in.setVersion(QDataStream::Qt_5_15); // 确保数据流版本匹配
 
-    QString command;
+    ushort command;
     in >> command; // 读取指令字
     qDebug() << "收到指令字:" << command;
 
-
-    if (command == "FILE_TREE") { // 如果指令字是文件树
+    switch(command) {
+    case FILE_TREE: { // 文件树
         QString rootPath;
         in >> rootPath; // 读取根路径
 
@@ -63,9 +64,9 @@ void TcpClient::onReadyRead() {
         model->appendRow(rootItem); // 将根路径添加到model中
 
         parseDirectory(in, rootItem); // 解析目录结构
+        break;
     }
-
-    if(command == "FILE_LIST"){ // 如果指令字是文件列表
+    case FILE_LIST: { // 文件列表
         int fileCount;
         in >> fileCount; // 读取文件数量
 
@@ -76,17 +77,17 @@ void TcpClient::onReadyRead() {
             QStandardItem *item = new QStandardItem(fileName);
             model->appendRow(item); // 将文件名添加到model中
         }
+        break;
     }
-
-    if(command == "UPLOAD_FILE_READY"){ // 服务器准备好接收文件
+    case UPLOAD_FILE_READY: { // 准备上传文件
         uploadFile();
+        break;
     }
-
-    if(command == "UPLOAD_COMPLETE"){
-
+    case UPLOAD_COMPLETE: { // 上传完成
+        // 上传完成后的处理
+        break;
     }
-
-    if(command == "DOWNLOAD_FILE_READY"){ //
+    case DOWNLOAD_FILE_READY: { // 准备下载文件
         in >> m_downloadFileName >> m_downloadFileSize >> m_downloadFileHash;
         qDebug() << m_downloadFileName << m_downloadFileSize << m_downloadFileHash;
         QDir downloadDir("C:/download");
@@ -100,25 +101,35 @@ void TcpClient::onReadyRead() {
             file.close();
             m_downloadFilePath = filePath;
             QByteArray request;
-            QDataStream out(&request,QIODevice::WriteOnly);
+            QDataStream out(&request, QIODevice::WriteOnly);
+            out.setVersion(QDataStream::Qt_5_15); // 确保数据流版本匹配
 
-            qDebug() << "send:" << QString("RECEIVE_FILE_READY");
-            out << QString("RECEIVE_FILE_READY");
+            qDebug() << "send: RECEIVE_FILE_READY";
+            out << static_cast<ushort>(RECEIVE_FILE_READY); // 指令字 RECEIVE_FILE_READY
             m_socket->write(request); // 发送请求
             m_socket->flush(); // 刷新socket
         }
-
+        break;
     }
-
-    if(command == "DOWNLOAD_FILE"){ //
+    case DOWNLOAD_FILE: { // 下载文件
         receiveDownload(in);
+        break;
     }
-    // 如果还有其他指令类型，可以在这里处理
+    // 其他指令类型处理
+    default:{
+        qWarning() << "未知指令字:" << command;
+        break;
+    }
+}
 }
 
 // 请求文件列表
 void TcpClient::requestFileList() {
-    QByteArray request = "GET_FILE_LIST"; // 请求标志
+    QByteArray request;
+    QDataStream out(&request, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_15); // 确保数据流版本匹配
+
+    out << static_cast<ushort>(GET_FILE_LIST); // 指令字 FILE_LIST
     m_socket->write(request); // 发送请求
     m_socket->flush(); // 刷新socket
 }
@@ -127,7 +138,7 @@ void TcpClient::requestFileList() {
 void TcpClient::requestFileTree(){
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
-    out << QString("GET_FILE_TREE"); // 请求标志
+    out << static_cast<ushort>(GET_FILE_TREE);
     m_socket->write(request); // 发送请求
     m_socket->flush(); // 刷新socket
 }
@@ -149,8 +160,8 @@ void TcpClient::requestUpload(const QString &filePath){
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
 
-    qDebug() << QString("REQUEST_UPLOAD_FILE") << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
-    out << QString("REQUEST_UPLOAD_FILE") << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
+    qDebug() << static_cast<ushort>(REQUEST_UPLOAD_FILE) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
+    out << static_cast<ushort>(REQUEST_UPLOAD_FILE) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
     m_socket->write(request); // 发送请求
     m_socket->flush(); // 刷新socket
 
@@ -164,8 +175,8 @@ void TcpClient::requestDownload(const QString &fileName){
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
 
-    qDebug() << QString("REQUEST_DOWNLOAD_FILE") << fileName;
-    out << QString("REQUEST_DOWNLOAD_FILE") << fileName;
+    qDebug() << static_cast<ushort>(REQUEST_DOWNLOAD_FILE) << fileName;
+    out << static_cast<ushort>(REQUEST_DOWNLOAD_FILE) << fileName;
     m_socket->write(request); // 发送请求
     m_socket->flush(); // 刷新socket
 }
@@ -175,8 +186,8 @@ void TcpClient::requestDelete(const QString &fileName){
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
 
-    qDebug() << QString("REQUEST_DELETE_FILE") << fileName;
-    out << QString("REQUEST_DELETE_FILE") << fileName;
+    qDebug() << static_cast<ushort>(REQUEST_DELETE_FILE) << fileName;
+    out << static_cast<ushort>(REQUEST_DELETE_FILE) << fileName;
     m_socket->write(request); // 发送请求
     m_socket->flush(); // 刷新socket
 }
@@ -199,7 +210,7 @@ void TcpClient::uploadFile(){
         QDataStream out(&packet,QIODevice::WriteOnly);
         QByteArray chunk = fileData.mid(bytesSent, 50000);
 
-        out << QString("UPLOAD_FILE") << chunk;
+        out << static_cast<ushort>(UPLOAD_FILE) << chunk;
         qDebug() << count++ << "UPLOAD_FILE";
         bytesSent += chunk.size();
 
@@ -237,7 +248,7 @@ void TcpClient::receiveDownload(QDataStream &in){
         QByteArray fileHash = QCryptographicHash::hash(fileData, QCryptographicHash::Sha256).toHex();
         qDebug() << QString(fileHash);
         if (QString(fileHash) == m_downloadFileHash) {
-            out << QString("DOWNLOAD_COMPLETE");
+            out << static_cast<ushort>(DOWNLOAD_COMPLETE);
         } else {
             qWarning("File hash mismatch");
         }

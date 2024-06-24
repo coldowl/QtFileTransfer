@@ -20,32 +20,35 @@ void TcpServer::onReadyRead() {
 
     QByteArray data = m_socket->readAll();
     QDataStream in(&data, QIODevice::ReadOnly);
-    QString request;
+    ushort request;
     in >> request; // 读取客户端请求
-    qDebug() << "收到请求:" << request;
-    if (request == "GET_FILE_LIST") { // 如果请求为获取文件列表
-        sendFileList(); // 发送文件列表
+    qDebug() << "客户端收到请求:" << request;
+
+    switch (request) {
+    case GET_FILE_LIST: { // 获取文件列表
+        sendFileList();
+        break;
     }
-    if (request == "GET_FILE_TREE") { // 如果请求为获取文件树
-        sendFileTree(m_openPath); // 发送文件树
+    case GET_FILE_TREE: { // 获取文件树
+        sendFileTree(m_openPath);
     }
-    if (request == "REQUEST_UPLOAD_FILE") { // 客户端请求上传文件
+    case REQUEST_UPLOAD_FILE: { // 请求上传文件
         in >> m_uploadFileName >> m_uploadFileSize >> m_uploadFileHash;
         qDebug() << m_uploadFileName << m_uploadFileSize << m_uploadFileHash;
 
         responseUpload();
     }
-    if (request == "UPLOAD_FILE") { // 客户端开始发送文件数据
+    case UPLOAD_FILE: { // 开始发送文件数据
         receiveUpload(in);
     }
-    if (request == "REQUEST_DOWNLOAD_FILE") { // 客户端请求下载文件
+    case REQUEST_DOWNLOAD_FILE: { // 请求下载文件
         in >> m_downloadFileName;
         responseDownload();
     }
-    if (request == "RECEIVE_FILE_READY") { //
+    case RECEIVE_FILE_READY: { // 客户端准备好接收文件
         sendDownload();
     }
-    if (request == "REQUEST_DELETE_FILE") { // 客户端请求删除文件
+    case REQUEST_DELETE_FILE: { // 请求删除文件
         QString fileName;
         in >> fileName;
         QString filePath = m_openPath.filePath(fileName);
@@ -61,9 +64,11 @@ void TcpServer::onReadyRead() {
             qDebug() << "File does not exist:" << filePath;
         }
     }
-
+    default:{
+        break;
+    }
+    }
 }
-
 // 设置开放目录
 void TcpServer::setOpenFolder(const QString &dir){
     m_openPath = QDir(dir); // 设置 openpath 成员变量, openpath 目录下不能有太多文件
@@ -78,7 +83,7 @@ void TcpServer::sendFileList() {
 
     QByteArray data;
     QDataStream out(&data, QIODevice::WriteOnly);
-    out << QString("FILE_LIST"); // 指令字
+    out << static_cast<ushort>(FILE_LIST);
     out << fileList.size(); // 先发送文件数量
     foreach (QFileInfo fileInfo, fileList) {
         out << fileInfo.fileName(); // 逐个发送文件名
@@ -93,7 +98,7 @@ void TcpServer::sendFileTree(const QDir &dir){
     QByteArray data;
     QDataStream out(&data, QIODevice::WriteOnly);
 
-    out << QString("FILE_TREE"); // 指令字
+    out << static_cast<ushort>(FILE_TREE);
     qDebug() << dir.absolutePath();
     out << dir.absolutePath();  // 发送根路径
     sendDirectory(out, dir);    // 递归发送目录结构
@@ -133,7 +138,7 @@ void TcpServer::responseUpload() {
 
     if (file.open(QIODevice::WriteOnly)) { // 创建空文件
         file.close();
-        out << QString("UPLOAD_FILE_READY");
+        out << static_cast<ushort>(UPLOAD_FILE_READY);
     } else {
         qDebug() << "Failed to create file:" << file.errorString();
     }
@@ -170,7 +175,7 @@ void TcpServer::receiveUpload(QDataStream &in){
         QByteArray fileHash = QCryptographicHash::hash(fileData, QCryptographicHash::Sha256).toHex();
         qDebug() << QString(fileHash);
         if (QString(fileHash) == m_uploadFileHash) {
-            out << QString("UPLOAD_COMPLETE");
+            out << static_cast<ushort>(UPLOAD_COMPLETE);
         } else {
             qWarning("File hash mismatch");
         }
@@ -192,7 +197,7 @@ void TcpServer::responseDownload(){
     QFile file(fullPath);
     if (!file.exists()) {
         qDebug() << "File does not exist:" << fullPath;
-        out << QString("DOWNLOAD_FILE_REJECT");
+        out << static_cast<ushort>(DOWNLOAD_FILE_REJECT);
     }else{
         file.open(QIODevice::ReadOnly);
         QByteArray fileData = file.readAll();
@@ -200,8 +205,8 @@ void TcpServer::responseDownload(){
 
         m_downloadFilePath = fullPath;
         file.close();
-        out << QString("DOWNLOAD_FILE_READY") << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
-        qDebug() << QString("DOWNLOAD_FILE_READY") << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
+        out << static_cast<ushort>(DOWNLOAD_FILE_READY) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
+        qDebug() << static_cast<ushort>(DOWNLOAD_FILE_READY) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
 
     }
     m_socket->write(data);
@@ -226,7 +231,7 @@ void TcpServer::sendDownload(){
         QDataStream out(&packet,QIODevice::WriteOnly);
         QByteArray chunk = fileData.mid(bytesSent, 50000);
 
-        out << QString("DOWNLOAD_FILE") << chunk;
+        out << static_cast<ushort>(DOWNLOAD_FILE) << chunk;
         qDebug() << count++ << "DOWNLOAD_FILE";
         bytesSent += chunk.size();
 

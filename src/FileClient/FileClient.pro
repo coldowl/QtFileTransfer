@@ -10,12 +10,14 @@ CONFIG += c++17
 
 SOURCES += \
     custommessagehandler.cpp \
+    fileclient.cpp \
     main.cpp \
     mainwindow.cpp \
     tcpclient.cpp
 
 HEADERS += \
     custommessagehandler.h \
+    fileclient.h \
     mainwindow.h \
     tcpclient.h
 
