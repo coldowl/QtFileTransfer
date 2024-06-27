@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "tcpclient.h"
+#include "fileclient.h"
 #include "custommessagehandler.h"
 
 #include <QDir>
@@ -170,8 +171,10 @@ void MainWindow::on_actConnect_triggered(){
 
     bool isConnect;
 
-    m_tcpclient = new TcpClient(ui->treeView_2);
-    isConnect = m_tcpclient->connectToServer(lineServerIp->text(), spinPortEdit->value()); // 连接到服务器
+    m_tcpClient = new TcpClient();
+    m_fileClient = new FileClient(m_tcpClient, ui->treeView_2);
+
+    isConnect = m_tcpClient->connectToServer(lineServerIp->text(), spinPortEdit->value()); // 连接到服务器
 
     if(isConnect){
         ui->actConnect->setEnabled(false);
@@ -188,7 +191,7 @@ void MainWindow::on_actConnect_triggered(){
 
 
 void MainWindow::on_actDisconnect_triggered(){
-    m_tcpclient->disconnectFromServer();
+    m_tcpClient->disconnectFromServer();
     ui->textBrowser->append("断开连接！");
     ui->actConnect->setEnabled(true);
     ui->actDisconnect->setEnabled(false);
@@ -197,13 +200,13 @@ void MainWindow::on_actDisconnect_triggered(){
 
 void MainWindow::on_actUpload_triggered()
 {
-    m_tcpclient->requestUpload(ui->pathLineEdit->text());
+    m_fileClient->requestUpload(ui->pathLineEdit->text());
 }
 
 
 void MainWindow::on_pushButton_clicked()
 {
-    m_tcpclient->requestFileTree();
+    m_fileClient->requestFileTree();
 }
 
 
@@ -215,7 +218,7 @@ void MainWindow::on_actDelete_triggered(){
         QString fileName = model->data(index, Qt::DisplayRole).toString();
         qDebug() << "Selected file:" << fileName;
         // 调用请求删除函数并传递文件名作为参数
-        m_tcpclient->requestDelete(fileName);
+        m_fileClient->requestDelete(fileName);
     } else {
         qDebug() << "No file selected";
     }
@@ -230,7 +233,7 @@ void MainWindow::on_actDownload_triggered() {
         QString fileName = model->data(index, Qt::DisplayRole).toString();
         qDebug() << "Selected file:" << fileName;
         // 调用请求下载函数并传递文件名作为参数
-        m_tcpclient->requestDownload(fileName);
+        m_fileClient->requestDownload(fileName);
     } else {
         qDebug() << "No file selected";
     }

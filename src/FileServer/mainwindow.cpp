@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "tcpserver.h"
+#include "fileserver.h"
 #include "custommessagehandler.h"
 
 #include <QDir>
@@ -15,7 +16,6 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QThread>
-#include <filesystem>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -31,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     qInstallMessageHandler(customMessageHandler);
 
     m_tcpserver = new TcpServer(this);
+    m_fileServer = new FileServer(m_tcpserver, this);
 
     model = new QFileSystemModel(this);
     model -> setRootPath("C:/Users/COLDOWL/Desktop/open"); // 方便调试
@@ -189,7 +190,7 @@ void MainWindow::on_actDisconnect_triggered(){
 void MainWindow::on_actChooseFolder_triggered(){
     QFileInfo fileinfo(ui->pathLineEdit->text());
     if(fileinfo.isDir()){
-        m_tcpserver->setOpenFolder(ui->pathLineEdit->text());
+        m_fileServer->setOpenFolder(ui->pathLineEdit->text());
     }
     else{
         ui->textBrowser->append("请选择一个文件夹");

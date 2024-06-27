@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFileInfoList>
 #include <QDataStream>
+#include <QQueue>
 
 // const int DATA_BLOCK_SIZE = 1024;
 // const quint16 REQUEST_UPLOAD_FILE = 0x0001;
@@ -39,9 +40,33 @@ class TcpServer : public QTcpServer {
 public:
     explicit TcpServer(QObject *parent = nullptr);
 
-    // 自定义客户端可操作的文件夹
-    void setOpenFolder(const QString &dir);
+    // // 自定义客户端可操作的文件夹
+    // void setOpenFolder(const QString &dir);
 
+    // 将代发数据包加入队列
+    void enqueuePacket(const QByteArray &packet);
+
+signals:
+    // 获取文件列表
+    void getFileList();
+
+    // 获取文件树
+    void getFileTree();
+
+    // 请求上传文件
+    void requestUploadFile(QDataStream &in);
+
+    // 接收上传文件
+    void uploadFileReceived(QDataStream &in);
+
+    // 请求下载文件
+    void requestDownloadFile(QDataStream &in);
+
+    // 客户端准备好接收文件
+    void receiveFileReady();
+
+    // 请求删除文件
+    void requestDeleteFile(QDataStream &in);
 
 private slots:
     // 处理新连接
@@ -50,40 +75,17 @@ private slots:
     // 处理客户端的请求
     void onReadyRead();
 
-    // 发送文件列表给客户端
-    void sendFileList();
+    // 发送报文给服务器
+    void sendNextPacket();
 
-    // 发送文件树给客户端
-    void sendFileTree(const QDir &dir);
-
-    // 发送文件目录给客户端
-    void sendDirectory(QDataStream &out, const QDir &dir);
-
-    // 处理文件上传请求
-    void responseUpload();
-
-    // 接收上传文件
-    void receiveUpload(QDataStream &in);
-
-    // 处理文件下载请求
-    void responseDownload();
-
-    // 发送下载文件
-    void sendDownload();
 
 private:
-    QDir m_openPath; // 开放文件夹给客户端
+
     QTcpSocket *m_socket = nullptr;
+    QQueue<QByteArray> m_packetQueue;
 
-    // 上传文件的文件信息
-    QString m_uploadFileName = "";
-    qint64 m_uploadFileSize = 0;
-    qint64 m_uploadBytesReceived = 0;
-    QString m_uploadFileHash = "";
+    bool m_isSending = false;
 
-    // 下载文件的文件信息
-    QString m_downloadFileName = "";
-    QString m_downloadFilePath = "";
 };
 
 

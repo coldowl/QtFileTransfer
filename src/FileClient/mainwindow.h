@@ -8,11 +8,12 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include "tcpclient.h"
+#include "fileclient.h"
 
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindow;
+     class MainWindow;
 }
 QT_END_NAMESPACE
 
@@ -45,8 +46,8 @@ private:
     Ui::MainWindow *ui;
     QFileSystemModel *model;//定义数据模型变量
     QString getLocalIP();
-    QTcpSocket* m_tcpSocket;//
-    TcpClient *m_tcpclient;
+    TcpClient *m_tcpClient;
+    FileClient *m_fileClient;
     QProgressBar *downloadProgressBar;
     QLineEdit *lineServerIp;
     QSpinBox *spinPortEdit;

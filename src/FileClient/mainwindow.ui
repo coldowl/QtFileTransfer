@@ -113,6 +113,13 @@
             <item row="0" column="0">
              <widget class="QTextBrowser" name="textBrowser"/>
             </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="pushButton_2">
+              <property name="text">
+               <string>清空控制台</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </widget>
@@ -227,5 +234,22 @@
   </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>textBrowser</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>927</x>
+     <y>666</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>915</x>
+     <y>592</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

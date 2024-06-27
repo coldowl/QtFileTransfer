@@ -7,6 +7,7 @@
 #include <QFileSystemModel>
 #include <QSpinBox>
 #include "tcpserver.h"
+#include "fileserver.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -32,7 +33,6 @@ private slots:
 
     void on_actDisconnect_triggered();
 
-
     void on_actChooseFolder_triggered();
 
 private:
@@ -40,7 +40,8 @@ private:
     QSpinBox *spinPortEdit;
     QFileSystemModel *model;//定义数据模型变量
     QTcpSocket *m_tcpsocket; // 定义TCP socket
-    TcpServer* m_tcpserver;//
+    TcpServer* m_tcpserver;
+    FileServer *m_fileServer;
 
 private:
     QString getLocalIP();

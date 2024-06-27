@@ -6,6 +6,7 @@
 #include <QStandardItemModel>
 #include <QDataStream>
 #include <QDir>
+#include <QQueue>
 
 //服务器发出的指令0x1开头
 #define FILE_TREE 0x1001
@@ -30,8 +31,8 @@ class TcpClient : public QObject {
     Q_OBJECT
 
 public:
-    // 构造函数，初始化treeView和model
-    explicit TcpClient(QTreeView *view, QObject *parent = nullptr);
+    // 构造函数
+    explicit TcpClient(QObject *parent = nullptr);
 
     // 连接到服务器
     bool connectToServer(const QString &host, const quint16 port);
@@ -39,54 +40,41 @@ public:
     // 断开连接
     bool disconnectFromServer();
 
-    // 请求文件树
-    void requestFileTree();
+    // 将代发数据包加入队列
+    void enqueuePacket(const QByteArray &packet);
 
-    // 请求上传文件
-    void requestUpload(const QString &filePath);
+signals:
+    // 文件树
+    void fileTreeReceived(QDataStream &in);
 
-    // 请求下载文件
-    void requestDownload(const QString &fileName);
+    // 文件列表
+    void fileListReceived(QDataStream &in);
 
-    // 请求删除文件
-    void requestDelete(const QString &fileName);
+    // 准备上传文件
+    void fileUploadReady();
+
+    // 准备下载文件
+    void fileDownloadReady(QDataStream &in);
+
+    // 下载文件
+    void downloadFileReceived(QDataStream &in);
+
+    // TCP建立连接成功
+    void tcpConnectSuccess();
 
 private slots:
     // 读取服务器发送的数据
     void onReadyRead();
 
+    // 发送报文给服务器
+    void sendNextPacket();
+
 private:
-    // 上传文件
-    void uploadFile();
-
-    // 接收下载文件
-    void receiveDownload(QDataStream &in);
-
-    // 请求文件列表
-    void requestFileList();
-
-    // 请求下载文件
-    void requestDownload();
-
-    // 请求删除文件
-    void requestDelete();
-
-    // 递归解析目录结构
-    void parseDirectory(QDataStream &in, QStandardItem *parentItem);
 
     QTcpSocket *m_socket = nullptr;
-    QTreeView *m_treeView = nullptr;
-    QStandardItemModel *model = nullptr;
+    QQueue<QByteArray> m_packetQueue;
 
-    QString m_uploadFilePath = "";
-    QFile *m_uploadFile = nullptr;
-
-
-    QString m_downloadFileName = "";
-    qint64 m_downloadFileSize = 0;
-    qint64 m_downloadBytesReceived = 0;
-    QString m_downloadFileHash = "";
-    QString m_downloadFilePath = "";
+    bool m_isSending = false;
 
 };
 
