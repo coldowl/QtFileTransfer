@@ -6,6 +6,7 @@
 #include <QCryptographicHash>
 #include <QStandardPaths>
 #include <QThread>
+#include <QtEndian>
 
 
 // 构造函数，初始化treeView和model
@@ -24,6 +25,7 @@ bool TcpClient::connectToServer(const QString &host, quint16 port) {
     if (m_socket->waitForConnected()) { // 等待连接
 
         emit tcpConnectSuccess(); // 连接成功后发送信号
+        qDebug() << "发送信号";
         return true;
     }else{
         return false;
@@ -86,9 +88,11 @@ void TcpClient::onReadyRead() {
 }
 
 // 报文入队
+
 void TcpClient::enqueuePacket(const QByteArray &packet) {
     m_socket->write(packet); // 将文件数据写入
     m_socket->flush(); // 刷新socket
+
     // m_packetQueue.enqueue(packet); // 报文入队
     // if (!m_isSending) {
     //     m_isSending = true;
@@ -107,5 +111,6 @@ void TcpClient::sendNextPacket() {
     //     qDebug() << "All packets sent";
     // }
 }
+
 
 

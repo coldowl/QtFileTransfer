@@ -33,7 +33,7 @@ class FileClient : public QObject{
 
 public:
     // 构造函数
-    explicit FileClient(TcpClient *tcpClient,QTreeView *view =nullptr, QObject *parent = nullptr);
+    explicit FileClient(TcpClient *tcpClient, QObject *parent = nullptr);
 
     // 请求文件列表
     void requestFileList();
@@ -49,6 +49,16 @@ public:
 
     // 请求删除文件
     void requestDelete(const QString &fileName);
+
+    // model getter 方法
+    QStandardItemModel* getModel() const;
+
+signals:
+    // 上传文件信息
+    void uploadInfo(QDataStream &in);
+
+    // 下载文件信息
+    void downloadInfo(QDataStream &in);
 
 private slots:
     // 处理文件树
@@ -74,7 +84,7 @@ private:
 
     TcpClient *m_tcpClient = nullptr;
     QTreeView *m_treeView = nullptr;
-    QStandardItemModel *model = nullptr;
+    QStandardItemModel *m_model = nullptr;
 
     QString m_uploadFilePath = "";
     QFile *m_uploadFile = nullptr;

@@ -1,0 +1,166 @@
+/* 基础色调 */
+* {
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+/* PushButton */
+QPushButton {
+    background-color: #007BFF;
+    color: white;
+    border-radius: 10px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #0056b3;
+}
+QPushButton:pressed {
+    background-color: #003f7f;
+}
+
+/* TreeView */
+QTreeView {
+    border: 1px solid #d0d0d0;
+    border-radius: 5px;
+}
+QTreeView::item:hover {
+
+}
+QTreeView::item:selected {
+
+}
+
+QTreeView QScrollBar:vertical {
+    /* 设置滚动条宽度 */
+    width: 8px; /* 根据需要调整宽度 */
+
+    /* 其他样式设置 */
+    border: none;
+    background: rgba(0,0,0,0%);
+    margin: 0px;
+    padding-top: 2px; /* 调整顶部留空，如果需要的话 */
+}
+
+QTreeView QScrollBar::handle:vertical {
+    /* 滚动条拖动部分的样式 */
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop: 0 rgb(100, 100, 100),
+                                stop: 1 rgb(200, 200, 200)); /* 自定义颜色 */
+    min-height: 20px; /* 拖动块的最小高度 */
+}
+
+QTreeView QScrollBar::add-line:vertical, QTreeView QScrollBar::sub-line:vertical {
+    /* 箭头部分的样式，可以隐藏 */
+    height: 0;
+    width: 0;
+}
+
+/* ListView */
+QListView {
+    border: 1px solid #d0d0d0;
+    border-radius: 5px;
+}
+QListView::item:hover {
+}
+QListView::item:selected {
+}
+
+/* StatusBar */
+QStatusBar {
+    background-color: yellow;
+    border-top: 1px solid #0056b3;
+}
+
+/* ToolBar */
+QToolBar {
+    background-color: white;
+    color: white;
+    border-bottom: 1px solid #0056b3;
+}
+QToolButton {
+    border-radius: 5px;
+}
+QToolButton:hover {
+
+}
+QToolButton:pressed {
+
+}
+
+/* MenuBar */
+QMenuBar {
+    background-color: white;
+    border-radius: 5px;
+}
+QMenuBar::item {
+    padding: 5px 10px;
+}
+QMenuBar::item:selected {
+
+}
+QMenuBar::item:pressed {
+
+}
+
+/* GroupBox */
+QGroupBox {
+    border: 1px solid black;
+/*    border-radius: 10px;*/
+    margin-top: 20px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 3px;
+    border-radius: 5px;
+}
+
+/* TextBrowser */
+QTextBrowser {
+    border: 1px solid #d0d0d0;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+/* TextEdit */
+QTextEdit {
+    border: 1px solid #d0d0d0;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+/* Splitter */
+QSplitter::handle {
+
+}
+QSplitter::handle:hover {
+
+}
+QSplitter::handle:pressed {
+
+}
+
+/* PathLineEdit */
+QLineEdit#pathLineEdit{
+    color: blue;
+    background-color: yellow;
+    selection-color: yellow;
+    selection-background-color: blue;
+    border: 1px solid #d0d0d0;
+    border-radius: 5px;
+    padding: 5px;
+}
+QLineEdit:hover {
+    border: 1px solid #007BFF;
+}
+QLineEdit:focus {
+    border: 1px solid #0056b3;
+}
+
+/* Label */
+QLabel {
+    border-radius: 5px;
+    padding: 3px;
+}
+QLabel:hover {
+
+}

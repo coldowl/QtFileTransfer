@@ -21,8 +21,19 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_tcpClient(new TcpClient(this))
+    // , m_fileClient(new FileClient(this))
 {
     ui->setupUi(this);
+    // 加载QSS文件
+    QFile file(":/qss/mainwindow.qss");
+    if (file.open(QFile::ReadOnly)) {
+        QString styleSheet = QLatin1String(file.readAll());
+        this->setStyleSheet(styleSheet);
+        file.close();
+    } else {
+        qDebug() << "Could not open style.qss";
+    }
 
     // 将全局指针指向textBrowser
     G_TextBrowser = ui->textBrowser;
@@ -171,10 +182,10 @@ void MainWindow::on_actConnect_triggered(){
 
     bool isConnect;
 
-    m_tcpClient = new TcpClient();
-    m_fileClient = new FileClient(m_tcpClient, ui->treeView_2);
+    m_fileClient =new FileClient(m_tcpClient);
 
     isConnect = m_tcpClient->connectToServer(lineServerIp->text(), spinPortEdit->value()); // 连接到服务器
+    ui->treeView_2->setModel(m_fileClient->getModel());
 
     if(isConnect){
         ui->actConnect->setEnabled(false);
@@ -200,7 +211,15 @@ void MainWindow::on_actDisconnect_triggered(){
 
 void MainWindow::on_actUpload_triggered()
 {
+
     m_fileClient->requestUpload(ui->pathLineEdit->text());
+
+
+    // // 弹出进度窗口
+    // fileTransferWidget = new FileTransferWidget(this);
+    // // fileTransferWidget->setWindowModality(Qt::ApplicationModal); // 设置为模态对话框
+    // fileTransferWidget->setAttribute(Qt::WA_DeleteOnClose); // Ensure the widget is deleted when closed
+    // fileTransferWidget->show();
 }
 
 

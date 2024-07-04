@@ -4,30 +4,30 @@
 #include <QThread>
 #include <QCryptographicHash>
 
-FileClient::FileClient(TcpClient *tcpClient, QTreeView *view, QObject *parent)
-    : QObject(parent), m_tcpClient(tcpClient), m_treeView(view) {
+FileClient::FileClient(TcpClient *tcpClient, QObject *parent)
+    : QObject(parent), m_tcpClient(tcpClient) {
 
-    model = new QStandardItemModel();
-    m_treeView->setModel(model);
+    m_model = new QStandardItemModel(this);
+    // m_treeView->setModel(model);
     m_uploadFile = new QFile(this);
 
     // 若连接成功，先请求文件树
-    connect(tcpClient, &TcpClient::tcpConnectSuccess, this, &FileClient::requestFileTree);
+    connect(m_tcpClient, &TcpClient::tcpConnectSuccess, this, &FileClient::requestFileTree);
 
     // 解析文件树
-    connect(tcpClient, &TcpClient::fileTreeReceived, this, &FileClient::dealFileTree);
+    connect(m_tcpClient, &TcpClient::fileTreeReceived, this, &FileClient::dealFileTree);
 
     // 处理文件列表
-    connect(tcpClient, &TcpClient::fileListReceived, this, &FileClient::dealFileList);
+    connect(m_tcpClient, &TcpClient::fileListReceived, this, &FileClient::dealFileList);
 
     // 上传文件
-    connect(tcpClient, &TcpClient::fileUploadReady, this, &FileClient::uploadFile);
+    connect(m_tcpClient, &TcpClient::fileUploadReady, this, &FileClient::uploadFile);
 
     // 下载之前的准备
-    connect(tcpClient, &TcpClient::fileDownloadReady, this, &FileClient::prepareForFileDownload);
+    connect(m_tcpClient, &TcpClient::fileDownloadReady, this, &FileClient::prepareForFileDownload);
 
     // 接收下载文件
-    connect(tcpClient, &TcpClient::downloadFileReceived, this, &FileClient::receiveDownload);
+    connect(m_tcpClient, &TcpClient::downloadFileReceived, this, &FileClient::receiveDownload);
 }
 
 // 请求文件列表
@@ -47,6 +47,7 @@ void FileClient::requestFileTree(){
     QDataStream out(&request,QIODevice::WriteOnly);
     out << static_cast<ushort>(GET_FILE_TREE);
     m_tcpClient->enqueuePacket(request); // 发送请求
+    qDebug() << "请求文件树";
 }
 
 // 请求上传文件
@@ -56,7 +57,7 @@ void FileClient::requestUpload(const QString &filePath){
     QFileInfo fileInfo(filePath);
 
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning("Failed to open file");
+        qWarning("打开文件失败！");
         return;
     }
 
@@ -68,6 +69,11 @@ void FileClient::requestUpload(const QString &filePath){
 
     qDebug() << "REQUEST_UPLOAD_FILE" << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
     out << static_cast<ushort>(REQUEST_UPLOAD_FILE) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
+
+    QDataStream info;
+    info << fileInfo.fileName() << fileInfo.size() << "准备上传";
+    emit uploadInfo(info); // 发射信号给传输进度窗口
+
     m_tcpClient->enqueuePacket(request); // 发送请求
 
 
@@ -93,6 +99,11 @@ void FileClient::requestDelete(const QString &fileName){
     qDebug() << "REQUEST_DELETE_FILE" << fileName;
     out << static_cast<ushort>(REQUEST_DELETE_FILE) << fileName;
     m_tcpClient->enqueuePacket(request); // 发送请求
+}
+
+QStandardItemModel *FileClient::getModel() const
+{
+    return m_model;
 }
 
 // 上传文件
@@ -198,9 +209,9 @@ void FileClient::dealFileTree(QDataStream &in){
     QString rootPath;
     in >> rootPath; // 读取根路径
 
-    model->clear(); // 清除现有的model数据
+    m_model->clear(); // 清除现有的model数据
     QStandardItem *rootItem = new QStandardItem(rootPath);
-    model->appendRow(rootItem); // 将根路径添加到model中
+    m_model->appendRow(rootItem); // 将根路径添加到model中
 
     parseDirectory(in, rootItem); // 解析目录结构
 }
@@ -210,12 +221,12 @@ void FileClient::dealFileList(QDataStream &in){
     int fileCount;
     in >> fileCount; // 读取文件数量
 
-    model->clear(); // 清除现有的model数据
+    m_model->clear(); // 清除现有的model数据
     for (int i = 0; i < fileCount; ++i) {
         QString fileName;
         in >> fileName; // 读取每个文件名
         QStandardItem *item = new QStandardItem(fileName);
-        model->appendRow(item); // 将文件名添加到model中
+        m_model->appendRow(item); // 将文件名添加到model中
     }
 }
 

@@ -9,7 +9,7 @@
 #include <QSpinBox>
 #include "tcpclient.h"
 #include "fileclient.h"
-
+#include "filetransferwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -44,6 +44,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    FileTransferWidget *fileTransferWidget;
+
     QFileSystemModel *model;//定义数据模型变量
     QString getLocalIP();
     TcpClient *m_tcpClient;

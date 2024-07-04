@@ -6,122 +6,113 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1043</width>
-    <height>733</height>
+    <width>1369</width>
+    <height>676</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_3">
+   <layout class="QGridLayout" name="gridLayout_7">
     <item row="0" column="0">
-     <widget class="QSplitter" name="splitter_2">
+     <widget class="QSplitter" name="splitter_3">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="currentIndex">
-        <number>1</number>
-       </property>
-       <widget class="QWidget" name="tab_1">
-        <attribute name="title">
-         <string>本地</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="0" column="0">
-          <widget class="QSplitter" name="splitter">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <widget class="QGroupBox" name="groupBox_3">
-            <property name="title">
-             <string>文件目录</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_9">
-             <item row="0" column="0">
-              <widget class="QTreeView" name="treeView"/>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QGroupBox" name="groupBox_2">
-            <property name="title">
-             <string>列表显示</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_10">
-             <item row="0" column="0">
-              <widget class="QLineEdit" name="pathLineEdit"/>
-             </item>
-             <item row="1" column="0">
-              <widget class="QListView" name="listView"/>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>服务器</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_7">
-         <item row="1" column="0">
-          <widget class="QGroupBox" name="groupBox">
-           <property name="title">
-            <string>文件列表</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0">
-             <widget class="QTreeView" name="treeView_2"/>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QPushButton" name="pushButton">
-           <property name="text">
-            <string>刷新</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
       <widget class="QWidget" name="widget" native="true">
-       <layout class="QGridLayout" name="gridLayout_12">
+       <layout class="QGridLayout" name="gridLayout_6">
         <item row="0" column="0">
-         <widget class="QSplitter" name="splitter_3">
+         <widget class="QSplitter" name="splitter_2">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Horizontal</enum>
           </property>
-          <widget class="QGroupBox" name="groupBox_4">
-           <property name="title">
-            <string>详细信息</string>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="cursor">
+            <cursorShape>ArrowCursor</cursorShape>
            </property>
-           <layout class="QGridLayout" name="gridLayout_11">
-            <item row="0" column="0">
-             <widget class="QTextEdit" name="datailTextEdit"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QGroupBox" name="groupBox_5">
-           <property name="title">
-            <string>控制台</string>
+           <property name="mouseTracking">
+            <bool>false</bool>
            </property>
-           <layout class="QGridLayout" name="gridLayout_5">
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <property name="title">
+            <string>本地</string>
+           </property>
+           <property name="flat">
+            <bool>false</bool>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_3">
             <item row="0" column="0">
-             <widget class="QTextBrowser" name="textBrowser"/>
+             <widget class="QLineEdit" name="pathLineEdit"/>
             </item>
             <item row="1" column="0">
-             <widget class="QPushButton" name="pushButton_2">
+             <widget class="QSplitter" name="splitter">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QTreeView" name="treeView"/>
+              <widget class="QListView" name="listView"/>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QGroupBox" name="groupBox">
+           <property name="title">
+            <string>客户端</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="1" column="0">
+             <widget class="QTreeView" name="treeView_2"/>
+            </item>
+            <item row="0" column="0">
+             <widget class="QPushButton" name="pushButton">
               <property name="text">
-               <string>清空控制台</string>
+               <string>刷新</string>
               </property>
              </widget>
             </item>
            </layout>
           </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="widget_2" native="true">
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="groupBox_4">
+          <property name="title">
+           <string>详细信息</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
+            <widget class="QTextEdit" name="datailTextEdit"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QGroupBox" name="groupBox_5">
+          <property name="title">
+           <string>控制台</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QTextBrowser" name="textBrowser"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="pushButton_2">
+             <property name="text">
+              <string>清空控制台</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -136,7 +127,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1043</width>
+     <width>1369</width>
      <height>25</height>
     </rect>
    </property>

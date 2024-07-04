@@ -43,6 +43,7 @@ public:
     // 将代发数据包加入队列
     void enqueuePacket(const QByteArray &packet);
 
+
 signals:
     // 文件树
     void fileTreeReceived(QDataStream &in);
@@ -66,7 +67,7 @@ private slots:
     // 读取服务器发送的数据
     void onReadyRead();
 
-    // 发送报文给服务器
+    // 发送报文
     void sendNextPacket();
 
 private:

@@ -10,18 +10,23 @@ CONFIG += c++17
 
 SOURCES += \
     custommessagehandler.cpp \
+    datapacketwrapper.cpp \
     fileclient.cpp \
+    filetransferwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     tcpclient.cpp
 
 HEADERS += \
     custommessagehandler.h \
+    datapacketwrapper.h \
     fileclient.h \
+    filetransferwidget.h \
     mainwindow.h \
     tcpclient.h
 
 FORMS += \
+    filetransferwidget.ui \
     mainwindow.ui
 
 # Default rules for deployment.
@@ -36,6 +41,7 @@ msvc {
 
 RESOURCES += \
     resource.qrc
+
 
 
 
