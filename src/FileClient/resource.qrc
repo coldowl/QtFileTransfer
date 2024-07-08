@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>qss/mainwindow.qss</file>
+        <file>qss/filetransferwidget.qss</file>
+        <file>icons/refresh.png</file>
+        <file>icons/IconBackground.png</file>
     </qresource>
 </RCC>

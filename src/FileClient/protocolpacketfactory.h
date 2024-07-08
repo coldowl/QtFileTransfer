@@ -1,15 +1,13 @@
-#ifndef DATAPACKETWRAPPER_H
-#define DATAPACKETWRAPPER_H
+#ifndef PROTOCOLPACKETFACTORY_H
+#define PROTOCOLPACKETFACTORY_H
 
 #include <QObject>
-#include <tcpclient.h>
-#include <fileclient.h>
 
-class DataPacketWrapper : public QObject
+class ProtocolPacketFactory : public QObject
 {
     Q_OBJECT
 public:
-    explicit DataPacketWrapper(QObject *parent = nullptr);
+    explicit ProtocolPacketFactory(QObject *parent = nullptr);
 
 signals:
     // 协议包(已封装好）
@@ -20,7 +18,7 @@ signals:
 
 private slots:
     // 解析协议包
-    void parseProtocolPacket(QByteArray &buffer, const QByteArray &newProtocolPacket);
+    void parseProtocolPacket(QDataStream &in);
 
     // 封装数据包
     void wrapDataPacket(const QByteArray &dataPacket);
@@ -28,9 +26,6 @@ private slots:
 private:
     // 判断是否误码
     bool checkSum(const QByteArray &packet, int len);
-
-    FileClient *m_fileClient = nullptr;
-
 };
 
-#endif // DATAPACKETWRAPPER_H
+#endif // PROTOCOLPACKETFACTORY_H

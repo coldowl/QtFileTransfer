@@ -1,22 +1,20 @@
-#include "datapacketwrapper.h"
+#include "protocolpacketfactory.h"
 
 #include <QByteArray>
 #include <QDebug>
+#include <QDataStream>
 
-
-DataPacketWrapper::DataPacketWrapper(QObject *parent)
+ProtocolPacketFactory::ProtocolPacketFactory(QObject *parent)
     :QObject(parent){
-    m_fileClient = new FileClient(this);
+    // m_fileClient = new FileClient(this);
 
-    connect(m_fileClient, &FileClient::readyForWrap, this, &DataPacketWrapper::wrapDataPacket);
+    // connect(m_fileClient, &FileClient::readyForWrap, this, &DataPacketWrapper::wrapDataPacket);
 }
 
 // 组协议包，从（ID+DATA）开始
-void DataPacketWrapper::wrapDataPacket(const QByteArray &dataPacket) {
-    // 创建一个QByteArray对象用于存储结果
-    QByteArray result;
+void ProtocolPacketFactory::wrapDataPacket(const QByteArray &dataPacket) {
 
-    // 头部HEAD
+    QByteArray result;
     quint16 HEAD = 0xFEEF;
 
     // 计算总长度LEN（HEAD长度2字节 + LEN长度2字节 + packet长度 + SUM长度1字节）
@@ -51,13 +49,16 @@ void DataPacketWrapper::wrapDataPacket(const QByteArray &dataPacket) {
 }
 
 // 解协议包，解出（ID+DATA）
-void DataPacketWrapper::parseProtocolPacket(QByteArray& buffer, const QByteArray& newData) {
+void ProtocolPacketFactory::parseProtocolPacket(QDataStream &in) {
+    QByteArray buffer;
+
     // 将新的数据追加到缓存
-    buffer.append(newData);
+    in >> buffer;
+    qDebug() << buffer.toHex();
 
     while (true) {
         // 查找包头HEAD（0xHEAD为包头标识，可以根据实际情况修改）
-        int headIndex = buffer.indexOf(QByteArray::fromHex("HEAD"));
+        int headIndex = buffer.indexOf(QByteArray::fromHex("FEEF"));
         if (headIndex == -1) {
             // 包头不存在，清空缓存并返回
             buffer.clear();
@@ -80,19 +81,19 @@ void DataPacketWrapper::parseProtocolPacket(QByteArray& buffer, const QByteArray
             return;
         }
 
-        // 提取完整包（从HEAD开始，长度为LEN + 5）
-        QByteArray packet = buffer.mid(headIndex, len + 5);
+        // 提取数据包（从HEAD开始，长度为LEN + 5）
+        QByteArray data = buffer.mid(headIndex, len + 5);
 
         // 校验SUMCHECK
-        if (!checkSum(packet, len + 4)) {
+        if (!checkSum(data, len + 4)) {
             // 校验失败，移除当前包头并继续查找下一个包头
             buffer.remove(0, headIndex + 2);
             continue;
         }
 
         // 处理有效的数据包
-        QByteArray data = packet.mid(6, len - 2);
-        emit parsedDataPacket(data);
+        QByteArray dataPacket = data.mid(6, len - 2);
+        emit parsedDataPacket(dataPacket);
 
         // 从缓存中清除当前包
         buffer.remove(0, headIndex + len + 5);
@@ -101,11 +102,10 @@ void DataPacketWrapper::parseProtocolPacket(QByteArray& buffer, const QByteArray
 
 
 // 检查数据包的校验和
-bool DataPacketWrapper::checkSum(const QByteArray &packet, int len) {
+bool ProtocolPacketFactory::checkSum(const QByteArray &packet, int len) {
     quint8 sum = 0;
     for (int i = 0; i < len; ++i) {
         sum += static_cast<quint8>(packet[i]);
     }
     return sum == static_cast<quint8>(packet[len]);
 }
-

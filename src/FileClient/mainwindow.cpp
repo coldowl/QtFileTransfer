@@ -3,6 +3,7 @@
 #include "tcpclient.h"
 #include "fileclient.h"
 #include "custommessagehandler.h"
+#include "mediator.h"
 
 #include <QDir>
 #include <QModelIndex>
@@ -16,15 +17,18 @@
 #include <QHostAddress>
 #include <QMessageBox>
 #include <QDataStream>
+#include <QThread>
 
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_tcpClient(new TcpClient(this))
-    // , m_fileClient(new FileClient(this))
+    , m_fileClient(new FileClient(this))
+    // , m_fileTransferWidget(new FileTransferWidget(this))
 {
     ui->setupUi(this);
+
     // 加载QSS文件
     QFile file(":/qss/mainwindow.qss");
     if (file.open(QFile::ReadOnly)) {
@@ -34,6 +38,12 @@ MainWindow::MainWindow(QWidget *parent)
     } else {
         qDebug() << "Could not open style.qss";
     }
+
+    QThread* sub = new QThread; // 创造子线程
+    m_fileTransferWidget = new FileTransferWidget();
+
+    m_fileTransferWidget->moveToThread(sub);
+    sub->start();
 
     // 将全局指针指向textBrowser
     G_TextBrowser = ui->textBrowser;
@@ -107,15 +117,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->listView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
 
+    // 中介者管理connect函数
+    Mediator mediator(m_fileClient, m_tcpClient, m_fileTransferWidget);
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete m_fileTransferWidget;
 }
 
-
-//获取本地IP
 QString MainWindow::getLocalIP()
 {
     QString hostName=QHostInfo::localHostName();//本地主机名
@@ -177,12 +189,9 @@ void MainWindow::onListViewClicked(const QModelIndex &index)
 
 }
 
-
 void MainWindow::on_actConnect_triggered(){
 
     bool isConnect;
-
-    m_fileClient =new FileClient(m_tcpClient);
 
     isConnect = m_tcpClient->connectToServer(lineServerIp->text(), spinPortEdit->value()); // 连接到服务器
     ui->treeView_2->setModel(m_fileClient->getModel());
@@ -199,8 +208,6 @@ void MainWindow::on_actConnect_triggered(){
     }
 }
 
-
-
 void MainWindow::on_actDisconnect_triggered(){
     m_tcpClient->disconnectFromServer();
     ui->textBrowser->append("断开连接！");
@@ -208,26 +215,25 @@ void MainWindow::on_actDisconnect_triggered(){
     ui->actDisconnect->setEnabled(false);
 }
 
-
 void MainWindow::on_actUpload_triggered()
 {
-
+    // m_fileTransferWidget = new FileTransferWidget();
+    // connect(m_fileClient, &FileClient::uploadBasicInfo, m_fileTransferWidget, &FileTransferWidget::setBasicInfo);
+    // connect(m_fileClient, &FileClient::uploadProgressInfo, m_fileTransferWidget, &FileTransferWidget::setProgressInfo);
+    // 弹出进度窗口
     m_fileClient->requestUpload(ui->pathLineEdit->text());
 
+    // fileTransferWidget->setWindowModality(Qt::ApplicationModal); // 设置为模态对话框
+    // m_fileTransferWidget->setAttribute(Qt::WA_DeleteOnClose); // 关闭的时候删除
+    m_fileTransferWidget->show();
 
-    // // 弹出进度窗口
-    // fileTransferWidget = new FileTransferWidget(this);
-    // // fileTransferWidget->setWindowModality(Qt::ApplicationModal); // 设置为模态对话框
-    // fileTransferWidget->setAttribute(Qt::WA_DeleteOnClose); // Ensure the widget is deleted when closed
-    // fileTransferWidget->show();
+
 }
 
-
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_refreshButton_clicked()
 {
     m_fileClient->requestFileTree();
 }
-
 
 void MainWindow::on_actDelete_triggered(){
     QModelIndex index = ui->treeView_2->currentIndex();
@@ -242,7 +248,6 @@ void MainWindow::on_actDelete_triggered(){
         qDebug() << "No file selected";
     }
 }
-
 
 void MainWindow::on_actDownload_triggered() {
     QModelIndex index = ui->treeView_2->currentIndex();

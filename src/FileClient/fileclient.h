@@ -33,7 +33,7 @@ class FileClient : public QObject{
 
 public:
     // 构造函数
-    explicit FileClient(TcpClient *tcpClient, QObject *parent = nullptr);
+    explicit FileClient(QObject *parent = nullptr);
 
     // 请求文件列表
     void requestFileList();
@@ -54,20 +54,25 @@ public:
     QStandardItemModel* getModel() const;
 
 signals:
-    // 上传文件信息
-    void uploadInfo(QDataStream &in);
+    // “上传文件”的信息
+    void uploadBasicInfo(const QByteArray &info);
 
-    // 下载文件信息
-    void downloadInfo(QDataStream &in);
+    // 上传进度信息
+    void uploadProgressInfo(const QByteArray &info);
 
-private slots:
+    // 下载的文件信息
+    void downloadBasicInfo(const QByteArray &info);
+
+    // 等待被封装的完整数据包
+    void readyForWrap(const QByteArray &dataPacket);
+
+public slots:
     // 处理文件树
     void dealFileTree(QDataStream &in);
 
     // 处理文件列表
     void dealFileList(QDataStream &in);
 
-private:
     // 上传文件
     void uploadFile();
 

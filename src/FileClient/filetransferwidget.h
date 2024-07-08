@@ -16,8 +16,15 @@ public:
     explicit FileTransferWidget(QWidget *parent = nullptr);
     ~FileTransferWidget();
 
-private slots:
-    void setFileInfo(QDataStream &in);
+public slots:
+    // 设置文件基本信息
+    void setBasicInfo(const QByteArray &info);
+
+    // 设置传输进度信息
+    void setProgressInfo(const QByteArray &info);
+
+    // 设置传输记录
+    void setRecordInfo(const QByteArray &info);
 
 private:
     Ui::FileTransferWidget *ui;

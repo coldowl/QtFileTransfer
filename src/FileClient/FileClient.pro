@@ -10,19 +10,23 @@ CONFIG += c++17
 
 SOURCES += \
     custommessagehandler.cpp \
-    datapacketwrapper.cpp \
+    datapacketfactory.cpp \
     fileclient.cpp \
     filetransferwidget.cpp \
     main.cpp \
     mainwindow.cpp \
+    mediator.cpp \
+    protocolpacketfactory.cpp \
     tcpclient.cpp
 
 HEADERS += \
     custommessagehandler.h \
-    datapacketwrapper.h \
+    datapacketfactory.h \
     fileclient.h \
     filetransferwidget.h \
     mainwindow.h \
+    mediator.h \
+    protocolpacketfactory.h \
     tcpclient.h
 
 FORMS += \

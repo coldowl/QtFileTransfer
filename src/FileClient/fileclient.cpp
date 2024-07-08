@@ -4,30 +4,13 @@
 #include <QThread>
 #include <QCryptographicHash>
 
-FileClient::FileClient(TcpClient *tcpClient, QObject *parent)
-    : QObject(parent), m_tcpClient(tcpClient) {
+FileClient::FileClient(QObject *parent)
+    : QObject(parent){
 
     m_model = new QStandardItemModel(this);
-    // m_treeView->setModel(model);
+    m_tcpClient = new TcpClient(this);
     m_uploadFile = new QFile(this);
 
-    // 若连接成功，先请求文件树
-    connect(m_tcpClient, &TcpClient::tcpConnectSuccess, this, &FileClient::requestFileTree);
-
-    // 解析文件树
-    connect(m_tcpClient, &TcpClient::fileTreeReceived, this, &FileClient::dealFileTree);
-
-    // 处理文件列表
-    connect(m_tcpClient, &TcpClient::fileListReceived, this, &FileClient::dealFileList);
-
-    // 上传文件
-    connect(m_tcpClient, &TcpClient::fileUploadReady, this, &FileClient::uploadFile);
-
-    // 下载之前的准备
-    connect(m_tcpClient, &TcpClient::fileDownloadReady, this, &FileClient::prepareForFileDownload);
-
-    // 接收下载文件
-    connect(m_tcpClient, &TcpClient::downloadFileReceived, this, &FileClient::receiveDownload);
 }
 
 // 请求文件列表
@@ -37,7 +20,8 @@ void FileClient::requestFileList() {
     out.setVersion(QDataStream::Qt_5_15); // 确保数据流版本匹配
 
     out << static_cast<ushort>(GET_FILE_LIST); // 指令字 FILE_LIST
-    m_tcpClient->enqueuePacket(request); // 发送请求
+
+    emit readyForWrap(request);
 
 }
 
@@ -46,7 +30,7 @@ void FileClient::requestFileTree(){
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
     out << static_cast<ushort>(GET_FILE_TREE);
-    m_tcpClient->enqueuePacket(request); // 发送请求
+    emit readyForWrap(request);
     qDebug() << "请求文件树";
 }
 
@@ -70,11 +54,13 @@ void FileClient::requestUpload(const QString &filePath){
     qDebug() << "REQUEST_UPLOAD_FILE" << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
     out << static_cast<ushort>(REQUEST_UPLOAD_FILE) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
 
-    QDataStream info;
-    info << fileInfo.fileName() << fileInfo.size() << "准备上传";
-    emit uploadInfo(info); // 发射信号给传输进度窗口
+    QByteArray basicInfo;
+    QDataStream outInfo(&basicInfo, QIODevice::WriteOnly);
+    outInfo << fileInfo.fileName() << fileInfo.size();
+    basicInfo.append("准备上传");
+    emit uploadBasicInfo(basicInfo); // 发射信号给传输进度窗口
 
-    m_tcpClient->enqueuePacket(request); // 发送请求
+    emit readyForWrap(request);
 
 
 }
@@ -88,7 +74,7 @@ void FileClient::requestDownload(const QString &fileName){
 
     qDebug() << static_cast<ushort>(REQUEST_DOWNLOAD_FILE) << fileName;
     out << static_cast<ushort>(REQUEST_DOWNLOAD_FILE) << fileName;
-    m_tcpClient->enqueuePacket(request); // 发送请求
+    emit readyForWrap(request);
 }
 
 // 请求删除文件
@@ -98,7 +84,7 @@ void FileClient::requestDelete(const QString &fileName){
 
     qDebug() << "REQUEST_DELETE_FILE" << fileName;
     out << static_cast<ushort>(REQUEST_DELETE_FILE) << fileName;
-    m_tcpClient->enqueuePacket(request); // 发送请求
+    emit readyForWrap(request);
 }
 
 QStandardItemModel *FileClient::getModel() const
@@ -130,9 +116,21 @@ void FileClient::uploadFile(){
         bytesSent += chunk.size();
         qDebug() << "已发送" << bytesSent;
 
-        m_tcpClient->enqueuePacket(packet); // 将文件数据写入
-        QThread::msleep(3); // 防止发送过快，服务器来不及读
+        QByteArray progressInfo;
+        QDataStream outInfo(&progressInfo, QIODevice::WriteOnly);
+        // qint64 test1 = 85;
+        // qint64 test2 = 100;
+        // outInfo << test1 << test2;
+        // progressInfo.append(bytesSent+fileData.size());
+        outInfo << bytesSent << static_cast<qint64>(fileData.size());
+        emit uploadProgressInfo(progressInfo); // 给文件传输窗口
+        qDebug() << "已发射信号";
+
+
+        emit readyForWrap(packet);
+        QThread::msleep(30); // 防止发送过快，服务器来不及读
     }
+
 }
 
 // 下载文件前的准备工作
@@ -156,7 +154,7 @@ void FileClient::prepareForFileDownload(QDataStream &in){
         qDebug() << "send: RECEIVE_FILE_READY";
         out << static_cast<ushort>(RECEIVE_FILE_READY); // 指令字 RECEIVE_FILE_READY
 
-        m_tcpClient->enqueuePacket(request);
+        emit readyForWrap(request);
     }
 
 }
@@ -199,7 +197,7 @@ void FileClient::receiveDownload(QDataStream &in){
         } else {
             qWarning("File hash mismatch");
         }
-        m_tcpClient->enqueuePacket(data);
+        emit readyForWrap(data);
     }
 
 }

@@ -54,6 +54,9 @@ signals:
     // 准备上传文件
     void fileUploadReady();
 
+    // 文件上传成功,有待完善应该携带文件名
+    void fileUploadSuccess();
+
     // 准备下载文件
     void fileDownloadReady(QDataStream &in);
 
@@ -62,6 +65,10 @@ signals:
 
     // TCP建立连接成功
     void tcpConnectSuccess();
+
+    // 准备好解协议
+    void readyForProtocolParse(QDataStream &in);
+
 
 private slots:
     // 读取服务器发送的数据

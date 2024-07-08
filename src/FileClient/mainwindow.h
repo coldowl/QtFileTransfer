@@ -36,7 +36,7 @@ private slots:
 
     void on_actUpload_triggered();
 
-    void on_pushButton_clicked();
+    void on_refreshButton_clicked();
 
     void on_actDelete_triggered();
 
@@ -50,6 +50,7 @@ private:
     QString getLocalIP();
     TcpClient *m_tcpClient;
     FileClient *m_fileClient;
+    FileTransferWidget *m_fileTransferWidget;
     QProgressBar *downloadProgressBar;
     QLineEdit *lineServerIp;
     QSpinBox *spinPortEdit;

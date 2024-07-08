@@ -4,18 +4,29 @@
 }
 
 /* PushButton */
-QPushButton {
-    background-color: #007BFF;
-    color: white;
-    border-radius: 10px;
-    padding: 6px 12px;
+/* QPushButton
+{
+    background:white;
+    color:#0085ff;
+    border:2px solid #0085ff;
+    font:15px "Microsoft YaHei UI";
+    border-radius:10px;
+    padding:6px 12px 0 0;
 }
-QPushButton:hover {
-    background-color: #0056b3;
+
+QPushButton:hover
+{
+    background:#0085ff;
+    color:white;
+    border:none;
 }
-QPushButton:pressed {
-    background-color: #003f7f;
-}
+QPushButton:pressed
+{
+    background:#0065c3;
+    color:white;
+    border:none;
+} */
+
 
 /* TreeView */
 QTreeView {
@@ -29,7 +40,7 @@ QTreeView::item:selected {
 
 }
 
-QTreeView QScrollBar:vertical {
+/*QTreeView */QScrollBar:vertical {
     /* 设置滚动条宽度 */
     width: 8px; /* 根据需要调整宽度 */
 
@@ -40,7 +51,7 @@ QTreeView QScrollBar:vertical {
     padding-top: 2px; /* 调整顶部留空，如果需要的话 */
 }
 
-QTreeView QScrollBar::handle:vertical {
+/*QTreeView */QScrollBar::handle:vertical{
     /* 滚动条拖动部分的样式 */
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                                 stop: 0 rgb(100, 100, 100),
@@ -48,7 +59,7 @@ QTreeView QScrollBar::handle:vertical {
     min-height: 20px; /* 拖动块的最小高度 */
 }
 
-QTreeView QScrollBar::add-line:vertical, QTreeView QScrollBar::sub-line:vertical {
+/*QTreeView */QScrollBar::add-line:vertical, QTreeView QScrollBar::sub-line:vertical {
     /* 箭头部分的样式，可以隐藏 */
     height: 0;
     width: 0;
