@@ -182,10 +182,10 @@
   </action>
   <action name="actListen">
    <property name="text">
-    <string>开始监听</string>
+    <string>开始TCP监听</string>
    </property>
    <property name="toolTip">
-    <string>开始监听</string>
+    <string>开始TCP监听</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>

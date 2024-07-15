@@ -1,8 +1,10 @@
 #ifndef FILECLIENT_H
 #define FILECLIENT_H
 
+
 #include "tcpclient.h"
 #include <QString>
+// #include <QRunnable>
 #include <QStandardItem>
 #include <QTcpSocket>
 #include <QTreeView>
@@ -25,7 +27,6 @@
 #define REQUEST_DELETE_FILE 0x2005
 #define UPLOAD_FILE 0x2006
 #define DOWNLOAD_COMPLETE 0x2007
-
 
 
 class FileClient : public QObject{
@@ -68,20 +69,21 @@ signals:
 
 public slots:
     // 处理文件树
-    void dealFileTree(QDataStream &in);
+    void dealFileTree(QByteArray data);
 
     // 处理文件列表
-    void dealFileList(QDataStream &in);
+    void dealFileList(QByteArray data);
 
     // 上传文件
     void uploadFile();
 
     // 下载之前的准备工作
-    void prepareForFileDownload(QDataStream &in);
+    void prepareForFileDownload(QByteArray data);
 
     // 接收下载文件
-    void receiveDownload(QDataStream &in);
+    void receiveDownload(QByteArray data);
 
+private:
     // 递归解析目录结构
     void parseDirectory(QDataStream &in, QStandardItem *parentItem);
 
@@ -91,9 +93,9 @@ private:
     QTreeView *m_treeView = nullptr;
     QStandardItemModel *m_model = nullptr;
 
-    QString m_uploadFilePath = "";
-    QFile *m_uploadFile = nullptr;
 
+    QFile *m_uploadFile = nullptr;
+    QString m_uploadFilePath = "";
 
     QString m_downloadFileName = "";
     qint64 m_downloadFileSize = 0;

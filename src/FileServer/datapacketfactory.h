@@ -3,7 +3,6 @@
 
 #include <QObject>
 
-
 //服务器发出的指令0x1开头
 #define FILE_TREE 0x1001
 #define FILE_LIST 0x1002
@@ -29,23 +28,29 @@ public:
     explicit DataPacketFactory(QObject *parent = nullptr);
 
 signals:
-    // 文件树
-    void fileTreeReceived(QByteArray data);
+    // 获取文件列表
+    void getFileList();
 
-    // 文件列表
-    void fileListReceived(QByteArray data);
+    // 获取文件树
+    void getFileTree();
 
-    // 准备上传文件
-    void fileUploadReady();
+    // 请求上传文件
+    void requestUploadFile(QByteArray data);
 
-    // 准备下载文件
-    void fileDownloadReady(QByteArray data);
+    // 接收上传文件
+    void uploadFileReceived(QByteArray data);
 
-    // 下载文件
-    void downloadFileReceived(QByteArray data);
+    // 请求下载文件
+    void requestDownloadFile(QByteArray data);
 
-    // TCP建立连接成功
-    void tcpConnectSuccess();
+    // 客户端准备好接收文件
+    void receiveFileReady();
+
+    // 请求删除文件
+    void requestDeleteFile(QByteArray data);
+
+    // 客户端确认下载过程无误
+    void downloadComplete();
 
 public slots:
     void parseDataPacket(QByteArray &dataPacket);

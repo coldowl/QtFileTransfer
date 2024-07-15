@@ -2,29 +2,9 @@
 #include <QCryptographicHash>
 #include <QThread>
 
-FileServer::FileServer(TcpServer *tcpServer, QObject *parent)
-    : QObject(parent), m_tcpServer(tcpServer){
+FileServer::FileServer(QObject *parent)
+    : QObject(parent){
 
-    // 发送文件树
-    connect(tcpServer, &TcpServer::getFileTree, this, &FileServer::sendFileTree);
-
-    // 发送文件列表
-    connect(tcpServer, &TcpServer::getFileList, this, &FileServer::sendFileList);
-
-    // 请求上传文件
-    connect(tcpServer, &TcpServer::requestUploadFile, this, &FileServer::responseUpload);
-
-    // 接收上传文件
-    connect(tcpServer, &TcpServer::uploadFileReceived, this, &FileServer::receiveUpload);
-
-    // 请求下载文件
-    connect(tcpServer, &TcpServer::requestDownloadFile, this, &FileServer::responseDownload);
-
-    // 客户端准备好接收文件
-    connect(tcpServer, &TcpServer::receiveFileReady, this, &FileServer::sendDownload);
-
-    // 请求删除文件
-    connect(tcpServer, &TcpServer::requestDeleteFile, this, &FileServer::deleteFile);
 }
 
 // 设置开放目录
@@ -46,11 +26,13 @@ void FileServer::sendFileList(){
         out << fileInfo.fileName(); // 逐个发送文件名
     }
 
-    m_tcpServer->enqueuePacket(data);
+    emit readyForWrap(data);
+    // m_tcpServer->enqueuePacket(data);
 }
 
 // 发送文件树给客户端
 void FileServer::sendFileTree(){
+    qDebug() << "正在执行sendFileTree";
     QByteArray data;
     QDataStream out(&data, QIODevice::WriteOnly);
 
@@ -59,7 +41,9 @@ void FileServer::sendFileTree(){
     out <<  m_openPath.absolutePath();
     sendDirectory(out, m_openPath);    // 递归发送目录结构
 
-    m_tcpServer->enqueuePacket(data);
+    emit readyForWrap(data);
+    qDebug() << "发射信号readyForWrap";
+    // m_tcpServer->enqueuePacket(data);
 }
 
 // 递归发送目录结构
@@ -77,8 +61,8 @@ void FileServer::sendDirectory(QDataStream &out, const QDir &dir){
 }
 
 // 回应文件上传请求
-void FileServer::responseUpload(QDataStream &in){
-
+void FileServer::responseUpload(QByteArray data){
+    QDataStream in(&data, QIODevice::ReadOnly);
     in >> m_uploadFileName >> m_uploadFileSize >> m_uploadFileHash;
     qDebug() << m_uploadFileName << m_uploadFileSize << m_uploadFileHash;
     m_uploadBytesReceived = 0;
@@ -91,8 +75,8 @@ void FileServer::responseUpload(QDataStream &in){
     QFile file(filePath);
 
     // 发送确认命令字给客户端
-    QByteArray data;
-    QDataStream out(&data, QIODevice::WriteOnly);
+    QByteArray command;
+    QDataStream out(&command, QIODevice::WriteOnly);
 
     if (file.open(QIODevice::WriteOnly)) { // 创建空文件
         file.close();
@@ -101,19 +85,21 @@ void FileServer::responseUpload(QDataStream &in){
         qDebug() << "Failed to create file:" << file.errorString();
     }
 
-    m_tcpServer->enqueuePacket(data);
+    emit readyForWrap(command);
+    // m_tcpServer->enqueuePacket(data);
 }
 
 // 接收上传文件
-void FileServer::receiveUpload(QDataStream &in){
+void FileServer::receiveUpload(QByteArray data){
+    QDataStream in(&data, QIODevice::ReadOnly);
     int count = 0;
     QString filePath = m_openPath.filePath(m_uploadFileName);
     QFile file(filePath);
     // qDebug() <<"Receive file in this path:" <<filePath;
 
     // 发送确认命令字给客户端
-    QByteArray data;
-    QDataStream out(&data, QIODevice::WriteOnly);
+    QByteArray command;
+    QDataStream out(&command, QIODevice::WriteOnly);
 
     QByteArray chunk;
 
@@ -145,21 +131,24 @@ void FileServer::receiveUpload(QDataStream &in){
         } else {
             qWarning("File hash mismatch");
         }
-        m_tcpServer->enqueuePacket(data);
+
+        emit readyForWrap(command);
+        // m_tcpServer->enqueuePacket(data);
     }
 
 }
 
 // 处理下载请求
-void FileServer::responseDownload(QDataStream &in){
+void FileServer::responseDownload(QByteArray data){
+    QDataStream in(&data, QIODevice::ReadOnly);
     in >> m_downloadFileName;
 
     QString fullPath = QDir(m_openPath).filePath(m_downloadFileName);
     QFileInfo fileInfo(fullPath);
 
     // 发送确认命令字给客户端
-    QByteArray data;
-    QDataStream out(&data, QIODevice::WriteOnly);
+    QByteArray command;
+    QDataStream out(&command, QIODevice::WriteOnly);
 
     QFile file(fullPath);
     if (!file.exists()) {
@@ -176,7 +165,9 @@ void FileServer::responseDownload(QDataStream &in){
         qDebug() << static_cast<ushort>(DOWNLOAD_FILE_READY) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
 
     }
-    m_tcpServer->enqueuePacket(data);
+
+    emit readyForWrap(command);
+    // m_tcpServer->enqueuePacket(data);
 }
 
 // 发送下载文件数据给客户端
@@ -203,13 +194,16 @@ void FileServer::sendDownload(){
         bytesSent += chunk.size();
         qDebug() << "已发送" << bytesSent;
 
-        m_tcpServer->enqueuePacket(packet);
-        QThread::msleep(3); // 防止发送过快，服务器来不及读
+        emit readyForWrap(packet);
+        // m_tcpServer->enqueuePacket(packet);
+
+        // QThread::msleep(3); // 防止发送过快，服务器来不及读
 
     }
 }
 
-void FileServer::deleteFile(QDataStream &in){
+void FileServer::deleteFile(QByteArray data){
+    QDataStream in(&data, QIODevice::ReadOnly);
     QString fileName;
     in >> fileName;
     QString filePath = m_openPath.filePath(fileName);
@@ -225,6 +219,3 @@ void FileServer::deleteFile(QDataStream &in){
         qDebug() << "文件不存在:" << filePath;
     }
 }
-
-
-

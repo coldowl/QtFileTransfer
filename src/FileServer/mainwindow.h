@@ -7,8 +7,10 @@
 #include <QFileSystemModel>
 #include <QSpinBox>
 #include "tcpserver.h"
+#include "udpserver.h"
 #include "fileserver.h"
-
+#include "protocolpacketfactory.h"
+#include "datapacketfactory.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,7 +29,6 @@ public:
 
 private slots:
     void onListViewClicked(const QModelIndex &index);
-    void on_actUpload_triggered();
 
     void on_actListen_triggered();
 
@@ -39,9 +40,13 @@ private:
     Ui::MainWindow *ui;
     QSpinBox *spinPortEdit;
     QFileSystemModel *model;//定义数据模型变量
+
     QTcpSocket *m_tcpsocket; // 定义TCP socket
-    TcpServer* m_tcpserver;
+    TcpServer* m_tcpServer;
+    UdpServer *m_udpServer;
     FileServer *m_fileServer;
+    ProtocolPacketFactory *m_ppf;
+    DataPacketFactory *m_dpf;
 
 private:
     QString getLocalIP();

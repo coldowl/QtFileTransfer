@@ -29,13 +29,17 @@ class FileServer : public QObject{
     Q_OBJECT
 
 public:
-    explicit FileServer(TcpServer *tcpServer, QObject *parent = nullptr);
+    explicit FileServer(QObject *parent = nullptr);
 
     // 自定义客户端可操作的文件夹
     void setOpenFolder(const QString &dir);
 
+signals:
+    // 等待被封装的完整数据包
+    void readyForWrap(const QByteArray &dataPacket);
 
-private slots:
+
+public slots:
     // 发送文件列表给客户端
     void sendFileList();
 
@@ -46,19 +50,19 @@ private slots:
     void sendDirectory(QDataStream &out, const QDir &dir);
 
     // 处理文件上传请求
-    void responseUpload(QDataStream &in);
+    void responseUpload(QByteArray data);
 
     // 接收上传文件
-    void receiveUpload(QDataStream &in);
+    void receiveUpload(QByteArray data);
 
     // 处理文件下载请求
-    void responseDownload(QDataStream &in);
+    void responseDownload(QByteArray data);
 
     // 发送下载文件
     void sendDownload();
 
     // 删除文件
-    void deleteFile(QDataStream &in);
+    void deleteFile(QByteArray data);
 
 private:
     TcpServer *m_tcpServer = nullptr;

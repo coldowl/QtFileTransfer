@@ -7,9 +7,13 @@
 #include <QProgressBar>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QComboBox>
 #include "tcpclient.h"
+#include "udpclient.h"
 #include "fileclient.h"
 #include "filetransferwidget.h"
+#include "protocolpacketfactory.h"
+#include "datapacketfactory.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -42,20 +46,27 @@ private slots:
 
     void on_actDownload_triggered();
 
+    void onProtocolChanged(int index);
 private:
     Ui::MainWindow *ui;
     FileTransferWidget *fileTransferWidget;
 
     QFileSystemModel *model;//定义数据模型变量
     QString getLocalIP();
+
     TcpClient *m_tcpClient;
+    UdpClient *m_udpClient;
     FileClient *m_fileClient;
     FileTransferWidget *m_fileTransferWidget;
+    ProtocolPacketFactory *m_ppf;
+    DataPacketFactory *m_dpf;
+
+    bool m_selectedProtocol = 0; // 0表示选择TCP协议，1表示选择UDP协议，默认是0
+
     QProgressBar *downloadProgressBar;
     QLineEdit *lineServerIp;
     QSpinBox *spinPortEdit;
-
-
+    QComboBox *protocolComboBox;
 
 };
 #endif // MAINWINDOW_H

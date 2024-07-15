@@ -1,7 +1,10 @@
 #include "fileclient.h"
 #include "tcpclient.h"
+#include "fileclient.h"
 #include <QFileInfo>
 #include <QThread>
+// #include <QDataStream>
+// #include <QRunnable>
 #include <QCryptographicHash>
 
 FileClient::FileClient(QObject *parent)
@@ -27,11 +30,12 @@ void FileClient::requestFileList() {
 
 // 请求文件树
 void FileClient::requestFileTree(){
+    qDebug() << "正在执行requestFileTree";
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
     out << static_cast<ushort>(GET_FILE_TREE);
+    qDebug() << "发送信号readyForWrap";
     emit readyForWrap(request);
-    qDebug() << "请求文件树";
 }
 
 // 请求上传文件
@@ -125,16 +129,15 @@ void FileClient::uploadFile(){
         outInfo << bytesSent << static_cast<qint64>(fileData.size());
         emit uploadProgressInfo(progressInfo); // 给文件传输窗口
         qDebug() << "已发射信号";
-
-
         emit readyForWrap(packet);
-        QThread::msleep(30); // 防止发送过快，服务器来不及读
+        // QThread::msleep(30); // 防止发送过快，服务器来不及读
     }
 
 }
 
 // 下载文件前的准备工作
-void FileClient::prepareForFileDownload(QDataStream &in){
+void FileClient::prepareForFileDownload(QByteArray data){
+    QDataStream in(&data, QIODevice::ReadOnly);
     in >> m_downloadFileName >> m_downloadFileSize >> m_downloadFileHash;
     qDebug() << m_downloadFileName << m_downloadFileSize << m_downloadFileHash;
     QDir downloadDir("C:/download");
@@ -160,13 +163,14 @@ void FileClient::prepareForFileDownload(QDataStream &in){
 }
 
 // 接收下载文件数据
-void FileClient::receiveDownload(QDataStream &in){
+void FileClient::receiveDownload(QByteArray data){
+    QDataStream in(&data, QIODevice::ReadOnly);
     int count = 0;
     QFile file(m_downloadFilePath);
 
     // 发送确认命令字给客户端
-    QByteArray data;
-    QDataStream out(&data, QIODevice::WriteOnly);
+    QByteArray command;
+    QDataStream out(&command, QIODevice::WriteOnly);
 
     QByteArray chunk;
     // 检查并以追加模式打开文件（如果未打开）
@@ -197,13 +201,14 @@ void FileClient::receiveDownload(QDataStream &in){
         } else {
             qWarning("File hash mismatch");
         }
-        emit readyForWrap(data);
+        emit readyForWrap(command);
     }
 
 }
 
 // 解析文件树
-void FileClient::dealFileTree(QDataStream &in){
+void FileClient::dealFileTree(QByteArray data){
+    QDataStream in(&data, QIODevice::ReadOnly);
     QString rootPath;
     in >> rootPath; // 读取根路径
 
@@ -215,7 +220,8 @@ void FileClient::dealFileTree(QDataStream &in){
 }
 
 // 处理文件列表
-void FileClient::dealFileList(QDataStream &in){
+void FileClient::dealFileList(QByteArray data){
+    QDataStream in(&data, QIODevice::ReadOnly);
     int fileCount;
     in >> fileCount; // 读取文件数量
 

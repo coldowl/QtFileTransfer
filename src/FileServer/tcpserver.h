@@ -43,30 +43,33 @@ public:
     // // 自定义客户端可操作的文件夹
     // void setOpenFolder(const QString &dir);
 
-    // 将代发数据包加入队列
+    // 发数据
     void enqueuePacket(const QByteArray &packet);
 
 signals:
-    // 获取文件列表
-    void getFileList();
+    // // 获取文件列表
+    // void getFileList();
 
-    // 获取文件树
-    void getFileTree();
+    // // 获取文件树
+    // void getFileTree();
 
-    // 请求上传文件
-    void requestUploadFile(QDataStream &in);
+    // // 请求上传文件
+    // void requestUploadFile(QDataStream &in);
 
-    // 接收上传文件
-    void uploadFileReceived(QDataStream &in);
+    // // 接收上传文件
+    // void uploadFileReceived(QDataStream &in);
 
-    // 请求下载文件
-    void requestDownloadFile(QDataStream &in);
+    // // 请求下载文件
+    // void requestDownloadFile(QDataStream &in);
 
-    // 客户端准备好接收文件
-    void receiveFileReady();
+    // // 客户端准备好接收文件
+    // void receiveFileReady();
 
-    // 请求删除文件
-    void requestDeleteFile(QDataStream &in);
+    // // 请求删除文件
+    // void requestDeleteFile(QDataStream &in);
+
+    // 准备好解协议
+    void readyForProtocolParse(const QByteArray &protocolPacket);
 
 private slots:
     // 处理新连接
@@ -75,8 +78,6 @@ private slots:
     // 处理客户端的请求
     void onReadyRead();
 
-    // 发送报文给服务器
-    void sendNextPacket();
 
 
 private:

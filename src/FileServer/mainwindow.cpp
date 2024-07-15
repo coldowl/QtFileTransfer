@@ -1,8 +1,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "tcpserver.h"
+// #include "udpserver.h"
 #include "fileserver.h"
 #include "custommessagehandler.h"
+#include "mediator.h"
 
 #include <QDir>
 #include <QModelIndex>
@@ -21,17 +23,26 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_tcpServer(new TcpServer(this))
+    , m_udpServer(new UdpServer(this))
+    , m_fileServer(new FileServer(this))
+    , m_ppf(new ProtocolPacketFactory(this))
+    , m_dpf(new DataPacketFactory(this))
 {
     ui->setupUi(this);
 
-    // 将全局指针指向textBrowser
-    G_TextBrowser = ui->textBrowser;
 
-    // 安装自定义消息处理器
-    qInstallMessageHandler(customMessageHandler);
+    // 多线程
+    QThread* sub = new QThread; // 创建线程对象
+    m_fileServer = new FileServer(); // 创建工作的类对象
+    m_fileServer->moveToThread(sub); // 将工作的类对象移动到创建的子线程对象中
+    sub->start();// 启动线程,但是线程工作要等有人调用它的槽函数
 
-    m_tcpserver = new TcpServer(this);
-    m_fileServer = new FileServer(m_tcpserver, this);
+    // // 将全局指针指向textBrowser
+    // G_TextBrowser = ui->textBrowser;
+
+    // // 安装自定义消息处理器
+    // qInstallMessageHandler(customMessageHandler);
 
     model = new QFileSystemModel(this);
     model -> setRootPath("C:/Users/COLDOWL/Desktop/open"); // 方便调试
@@ -69,8 +80,6 @@ MainWindow::MainWindow(QWidget *parent)
     //Action栏
     ui->actDisconnect->setEnabled(false);
 
-
-
     // treeView中选择文件夹，listView展示文件夹中的内容
     connect(ui->treeView, &QTreeView::clicked, this, [=](const QModelIndex &index) {
         ui->listView->setRootIndex(index);
@@ -90,6 +99,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->listView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
 
+    // 中介者管理connect函数
+    Mediator mediator(m_fileServer, m_tcpServer, m_udpServer, m_ppf, m_dpf);
 
 
 }
@@ -104,8 +115,8 @@ MainWindow::~MainWindow()
 QString MainWindow::getLocalIP()
 {
     QString hostName=QHostInfo::localHostName();//本地主机名
-    QHostInfo   hostInfo=QHostInfo::fromName(hostName);
-    QString   localIP="";
+    QHostInfo hostInfo=QHostInfo::fromName(hostName);
+    QString localIP="";
 
     QList<QHostAddress> addList=hostInfo.addresses();
 
@@ -162,17 +173,9 @@ void MainWindow::onListViewClicked(const QModelIndex &index)
 }
 
 
-
-
-void MainWindow::on_actUpload_triggered(){
-
-
-}
-
-
 void MainWindow::on_actListen_triggered(){
 
-    m_tcpserver->listen(QHostAddress::Any, spinPortEdit->value());
+    m_tcpServer->listen(QHostAddress::Any, spinPortEdit->value());
     ui->actListen->setEnabled(false);
     ui->actDisconnect->setEnabled(true);
     ui->textBrowser->append(QString("正在监听 %1 端口...").arg(spinPortEdit->value()));
@@ -180,7 +183,7 @@ void MainWindow::on_actListen_triggered(){
 
 
 void MainWindow::on_actDisconnect_triggered(){
-    m_tcpserver->close();
+    m_tcpServer->close();
     ui->textBrowser->append("关闭服务器");
     ui->actListen->setEnabled(true);
     ui->actDisconnect->setEnabled(false);

@@ -6,10 +6,9 @@
 
 ProtocolPacketFactory::ProtocolPacketFactory(QObject *parent)
     :QObject(parent){
-
 }
 
-// 组协议包，从（ID+DATA）开始
+// 组协议包
 void ProtocolPacketFactory::wrapDataPacket(const QByteArray &dataPacket) {
 
     QByteArray result;
@@ -37,14 +36,18 @@ void ProtocolPacketFactory::wrapDataPacket(const QByteArray &dataPacket) {
     // 将累加和添加到结果的末尾
     stream << SUMCHECK;
 
-    qDebug() << "发射wrappedProtocolPacket";
-    emit wrappedProtocolPacket(result);
+    // qDebug() << "HEAD:" << Qt::hex << HEAD;
+    // qDebug() << "LEN:" << LEN;
+    // qDebug() << "packet:" << packet.toHex();
+    // qDebug() << "SUMCHECK:" << Qt::hex << SUMCHECK;
+    // qDebug() << "result:" << result.toHex();
 
+    emit wrappedProtocolPacket(result);
 }
 
 // 解协议包，解出（ID+DATA）
-// step (1) 接收数据包
 void ProtocolPacketFactory::parseProtocolPacket(const QByteArray &data) {
+    qDebug() << "正在执行parseProtocolPacket";
 
     // Step (2) 将数据包追加到缓存
     buffer.append(data);

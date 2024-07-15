@@ -10,10 +10,10 @@ public:
     explicit ProtocolPacketFactory(QObject *parent = nullptr);
 
 signals:
-    // 协议包(已封装好）
+    // 协议包(已封装好)
     void wrappedProtocolPacket(const QByteArray &protocolPacket);
 
-    // 数据包（已解析好）
+    // 数据包(已解析好)
     void parsedDataPacket(QByteArray &dataPacket);
 
 public slots:

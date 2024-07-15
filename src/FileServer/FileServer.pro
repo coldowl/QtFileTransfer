@@ -10,16 +10,24 @@ CONFIG += c++17
 
 SOURCES += \
     custommessagehandler.cpp \
+    datapacketfactory.cpp \
     fileserver.cpp \
     main.cpp \
     mainwindow.cpp \
-    tcpserver.cpp
+    mediator.cpp \
+    protocolpacketfactory.cpp \
+    tcpserver.cpp \
+    udpserver.cpp
 
 HEADERS += \
     custommessagehandler.h \
+    datapacketfactory.h \
     fileserver.h \
     mainwindow.h \
-    tcpserver.h
+    mediator.h \
+    protocolpacketfactory.h \
+    tcpserver.h \
+    udpserver.h
 
 FORMS += \
     mainwindow.ui
