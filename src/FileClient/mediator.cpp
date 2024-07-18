@@ -28,24 +28,13 @@ Mediator::Mediator(
     // 封装数据包为协议包
     connect(m_fileClient, &FileClient::readyForWrap, m_ppf, &ProtocolPacketFactory::wrapDataPacket);
 
-    // 发送协议包 
-    // connect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, this, [this](const QByteArray &protocolPacket) {
-    //     if (m_selectedProtocol == 0) {
-    //         m_tcpClient->enqueuePacket(protocolPacket);
-    //     }
-    // });
-
-    // connect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, this, [this](const QByteArray &protocolPacket){
-    //     if (m_selectedProtocol == 1){
-    //         m_udpClient->sendDatagram(protocolPacket);
-    //     }
-    // });
+    // 发送协议包
     connect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, m_tcpClient, &TcpClient::enqueuePacket);
     connect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, m_udpClient, &UdpClient::sendDatagram);
 
     // 文件传输窗口
     connect(m_fileClient, &FileClient::uploadBasicInfo, m_fileTransferWidget, &FileTransferWidget::setBasicInfo);
-    connect(m_fileClient, &FileClient::uploadProgressInfo, m_fileTransferWidget, &FileTransferWidget::setProgressInfo);
+    connect(m_fileClient, &FileClient::progressUpdated, m_fileTransferWidget, &FileTransferWidget::setProgress);
 
 
     // 若TCP连接成功，先请求文件树

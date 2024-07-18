@@ -8,6 +8,8 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QComboBox>
+#include <QLabel>
+#include <QTimer>
 #include "tcpclient.h"
 #include "udpclient.h"
 #include "fileclient.h"
@@ -47,6 +49,24 @@ private slots:
     void on_actDownload_triggered();
 
     void onProtocolChanged(int index);
+
+    // 展示其它类发送的状态信息
+    void displayState(const QString &message);
+
+    void onSocketStateChanged(QString stateString);
+
+    void processNextState();
+signals:
+    void startTcpConnect(const QString ip, quint16 port);
+    void startUdpConnect(const QString ip, quint16 port);
+    void getModel(QStandardItemModel* &model);
+    void tcpDisconnect();
+    void udpDisconnect();
+    void requestUpload(QString path);
+    void requestFileTree();
+    void requestDelete(QString fileName);
+    void requestDownload(QString fileName);
+
 private:
     Ui::MainWindow *ui;
     FileTransferWidget *fileTransferWidget;
@@ -60,6 +80,9 @@ private:
     FileTransferWidget *m_fileTransferWidget;
     ProtocolPacketFactory *m_ppf;
     DataPacketFactory *m_dpf;
+    QThread *m_tcpThread;
+    QThread *m_udpThread;
+    QThread *m_fileThread;
 
     bool m_selectedProtocol = 0; // 0表示选择TCP协议，1表示选择UDP协议，默认是0
 
@@ -67,6 +90,11 @@ private:
     QLineEdit *lineServerIp;
     QSpinBox *spinPortEdit;
     QComboBox *protocolComboBox;
+    QLabel *LabSocketState;
+
+    QStringList stateQueue;
+    bool processing = false;
+
 
 };
 #endif // MAINWINDOW_H

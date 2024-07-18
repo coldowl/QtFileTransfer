@@ -3,6 +3,7 @@
 #include "fileclient.h"
 #include <QFileInfo>
 #include <QThread>
+#include <QTimer>
 // #include <QDataStream>
 // #include <QRunnable>
 #include <QCryptographicHash>
@@ -10,6 +11,11 @@
 FileClient::FileClient(QObject *parent)
     : QObject(parent){
 
+}
+
+
+// 初始化函数
+void FileClient::init(){
     m_model = new QStandardItemModel(this);
     m_tcpClient = new TcpClient(this);
     m_uploadFile = new QFile(this);
@@ -63,6 +69,8 @@ void FileClient::requestUpload(const QString &filePath){
     outInfo << fileInfo.fileName() << fileInfo.size();
     basicInfo.append("准备上传");
     emit uploadBasicInfo(basicInfo); // 发射信号给传输进度窗口
+    emit progressUpdated(0); // 确保发送前进度为0
+
 
     emit readyForWrap(request);
 
@@ -91,10 +99,6 @@ void FileClient::requestDelete(const QString &fileName){
     emit readyForWrap(request);
 }
 
-QStandardItemModel *FileClient::getModel() const
-{
-    return m_model;
-}
 
 // 上传文件
 void FileClient::uploadFile(){
@@ -108,6 +112,14 @@ void FileClient::uploadFile(){
 
     qint64 bytesSent = 0;
     int count = 0;
+    int totalSize = fileData.size();
+
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, [this, &bytesSent, totalSize]() {
+        int progress = static_cast<int>((bytesSent * 100) / totalSize);
+        emit progressUpdated(progress);
+    });
+    timer.start(100); // 每100毫秒发送一次进度信号
 
     while (bytesSent < fileData.size()) {
         QByteArray packet;
@@ -120,18 +132,23 @@ void FileClient::uploadFile(){
         bytesSent += chunk.size();
         qDebug() << "已发送" << bytesSent;
 
-        QByteArray progressInfo;
-        QDataStream outInfo(&progressInfo, QIODevice::WriteOnly);
-        // qint64 test1 = 85;
-        // qint64 test2 = 100;
-        // outInfo << test1 << test2;
-        // progressInfo.append(bytesSent+fileData.size());
-        outInfo << bytesSent << static_cast<qint64>(fileData.size());
-        emit uploadProgressInfo(progressInfo); // 给文件传输窗口
-        qDebug() << "已发射信号";
+        // QByteArray progressInfo;
+        // QDataStream outInfo(&progressInfo, QIODevice::WriteOnly);
+        // // qint64 test1 = 85;
+        // // qint64 test2 = 100;
+        // // outInfo << test1 << test2;
+        // // progressInfo.append(bytesSent+fileData.size());
+        // outInfo << bytesSent << static_cast<qint64>(fileData.size());
+        // emit uploadProgressInfo(progressInfo); // 给文件传输窗口
+        // qDebug() << "已发射信号";
+
         emit readyForWrap(packet);
-        // QThread::msleep(30); // 防止发送过快，服务器来不及读
+
+        QThread::msleep(30); // 防止发送过快，服务器来不及读
     }
+    timer.stop(); // 停止计时器
+
+    emit progressUpdated(100); // 确保发送最后的进度信号
 
 }
 
@@ -217,6 +234,8 @@ void FileClient::dealFileTree(QByteArray data){
     m_model->appendRow(rootItem); // 将根路径添加到model中
 
     parseDirectory(in, rootItem); // 解析目录结构
+
+    emit fileTreeModel(m_model); // 发送解析完成的文件树
 }
 
 // 处理文件列表

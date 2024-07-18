@@ -21,7 +21,7 @@ public slots:
     void setBasicInfo(const QByteArray &info);
 
     // 设置传输进度信息
-    void setProgressInfo(const QByteArray &info);
+    void setProgress(int progress);
 
     // 设置传输记录
     void setRecordInfo(const QByteArray &info);

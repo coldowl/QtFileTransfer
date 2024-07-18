@@ -9,7 +9,12 @@ class SyncFileTransferUI : public QObject
 public:
     explicit SyncFileTransferUI(QObject *parent = nullptr);
 
+    // 更新进度条
+    void updateProgress(const QByteArray &info);
+    void updateProgress(int progress);
+
 signals:
+    void progressValue(int progress);
 };
 
 #endif // SYNCFILETRANSFERUI_H

@@ -16,7 +16,7 @@ FileTransferWidget::FileTransferWidget(QWidget *parent)
         this->setStyleSheet(styleSheet);
         file.close();
     } else {
-        qDebug() << "Could not open style.qss";
+        qDebug() << "打不开style.qss";
     }
 
 
@@ -27,6 +27,7 @@ FileTransferWidget::~FileTransferWidget()
     delete ui;
 }
 
+// 设置传输文件的基本信息
 void FileTransferWidget::setBasicInfo(const QByteArray &info){
     QDataStream in(info);
 
@@ -48,30 +49,20 @@ void FileTransferWidget::setBasicInfo(const QByteArray &info){
 
 
 // 设置进度
-void FileTransferWidget::setProgressInfo(const QByteArray &info){
-    QDataStream in(info);
+void FileTransferWidget::setProgress(int progress){
 
-    qint64 currentBytes = 0;
-    qint64 totalBytes = 0;
+    ui->progressBar->setValue(progress);
 
-    in >> currentBytes >> totalBytes;
+    // // 创建一个 QStringListModel
+    // QStringListModel *model = new QStringListModel;
 
-    if (totalBytes > 0)
-    {
-        int progress = static_cast<int>((currentBytes * 100) / totalBytes);
-        ui->progressBar->setValue(progress);
-    }
+    // // 创建一个字符串列表并设置为模型的数据
+    // QStringList list;
+    // list << "Item 1" << "Item 2" << "Item 3" << "Item 4" << QString::number(currentBytes) << QString::number(totalBytes);
+    // model->setStringList(list);
 
-    // 创建一个 QStringListModel
-    QStringListModel *model = new QStringListModel;
-
-    // 创建一个字符串列表并设置为模型的数据
-    QStringList list;
-    list << "Item 1" << "Item 2" << "Item 3" << "Item 4" << QString::number(currentBytes) << QString::number(totalBytes);
-    model->setStringList(list);
-
-    // 将模型设置到 QListView 中
-    ui->listView->setModel(model);
+    // // 将模型设置到 QListView 中
+    // ui->listView->setModel(model);
 
 }
 

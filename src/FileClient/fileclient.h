@@ -54,18 +54,25 @@ public:
     // model getter 方法
     QStandardItemModel* getModel() const;
 
+
+    // 初始化函数
+    void init();
+
 signals:
     // “上传文件”的信息
     void uploadBasicInfo(const QByteArray &info);
 
     // 上传进度信息
-    void uploadProgressInfo(const QByteArray &info);
+    void progressUpdated(int progress);
 
     // 下载的文件信息
     void downloadBasicInfo(const QByteArray &info);
 
     // 等待被封装的完整数据包
     void readyForWrap(const QByteArray &dataPacket);
+
+    // 解析完成的文件树
+    void fileTreeModel(QStandardItemModel *model);
 
 public slots:
     // 处理文件树

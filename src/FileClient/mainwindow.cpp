@@ -24,8 +24,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_tcpClient(new TcpClient(this))
-    , m_udpClient(new UdpClient(this))
+    // , m_tcpClient(new TcpClient(this))
+    // , m_udpClient(new UdpClient(this))
     , m_fileClient(new FileClient(this))
     , m_ppf(new ProtocolPacketFactory(this))
     , m_dpf(new DataPacketFactory(this))
@@ -44,24 +44,49 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
 
-    // // 多线程
-    // // 文件操作线程
-    // QThread* fileThread = new QThread; // 创建线程对象
-    // m_fileClient = new FileClient(); // 创建工作的类对象
-    // m_fileClient->moveToThread(fileThread); // 将工作的类对象移动到创建的子线程对象中
-    // fileThread->start();// 启动线程,但是线程工作要等有人调用它的槽函数
+    // 多线程
+    // 文件操作线程
+    QThread* m_fileThread = new QThread; // 创建线程对象
+    m_fileClient = new FileClient(); // 创建工作的类对象
+    m_fileClient->moveToThread(m_fileThread); // 将工作的类对象移动到创建的子线程对象中
 
-    // // TCP通信线程
-    // QThread* tcpThread = new QThread;
-    // m_tcpClient = new TcpClient();
-    // m_tcpClient->moveToThread(tcpThread);
-    // tcpThread->start();
 
-    // // UDP通信线程
-    // QThread* udpThread = new QThread;
-    // m_udpClient = new UdpClient();
-    // m_udpClient->moveToThread(udpThread);
-    // udpThread->start();
+    // TCP通信线程
+    QThread* m_tcpThread = new QThread;
+    m_tcpClient = new TcpClient();
+    m_tcpClient->moveToThread(m_tcpThread);
+
+    // UDP通信线程
+    QThread* m_udpThread = new QThread;
+    m_udpClient = new UdpClient();
+    m_udpClient->moveToThread(m_udpThread);
+
+
+
+    connect(m_tcpThread, &QThread::started, m_tcpClient, &TcpClient::init);
+    connect(m_udpThread, &QThread::started, m_udpClient, &UdpClient::init);
+    connect(m_fileThread, &QThread::started, m_fileClient, &FileClient::init);
+
+    connect(m_fileThread, &QThread::finished, m_fileClient, &QObject::deleteLater);
+    connect(m_tcpThread, &QThread::finished, m_tcpClient, &QObject::deleteLater);
+    connect(m_udpThread, &QThread::finished, m_udpClient, &QObject::deleteLater);
+
+    // 启动线程
+    m_tcpThread->start();
+    m_udpThread->start();
+    m_fileThread->start();
+
+
+    // 使用信号槽确保在 init 之后再调用成员方法
+    connect(this, &MainWindow::startTcpConnect, m_tcpClient, &TcpClient::connectToServer);
+    connect(this, &MainWindow::startUdpConnect, m_udpClient, &UdpClient::setConnectInfo);
+    connect(this, &MainWindow::tcpDisconnect, m_tcpClient, &TcpClient::disconnectFromServer);
+    connect(this, &MainWindow::udpDisconnect, m_udpClient, &UdpClient::closeUdpSocket);
+    connect(this, &MainWindow::requestUpload, m_fileClient, &FileClient::requestUpload);
+    connect(this, &MainWindow::requestFileTree, m_fileClient, &FileClient::requestFileTree);
+    connect(this, &MainWindow::requestDelete, m_fileClient, &FileClient::requestDelete);
+    connect(this, &MainWindow::requestDownload, m_fileClient, &FileClient::requestDownload);
+
 
     m_fileTransferWidget = new FileTransferWidget();
 
@@ -87,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->listView->setModel(model);
 
     //状态栏
-    QLabel *LabSocketState=new QLabel("Socket状态：");//状态栏标签
+    LabSocketState=new QLabel("Socket状态：未获取");//状态栏标签
     LabSocketState->setMinimumWidth(250);
     ui->statusbar->addWidget(LabSocketState);
 
@@ -152,13 +177,61 @@ MainWindow::MainWindow(QWidget *parent)
     // 中介者管理connect函数
     Mediator mediator(m_fileClient, m_tcpClient, m_udpClient, m_fileTransferWidget, m_ppf, m_dpf, m_selectedProtocol);
 
+    connect(m_tcpClient, &TcpClient::stateChanged, this, &MainWindow::onSocketStateChanged);
+
+    // 展示文件树
+    connect(m_fileClient, &FileClient::fileTreeModel, this, [this](QStandardItemModel *model){
+        ui->treeView_2->setModel(model);
+    });
+
+
+    // 使用 lambda 表达式处理 TcpClient 和 UdpClient 的 success 信号
+    auto connectSuccessHandler = [this]() {
+        protocolComboBox->setEnabled(false);
+        ui->actConnect->setEnabled(false);
+        ui->actDisconnect->setEnabled(true);
+        ui->actUpload->setEnabled(true);
+        ui->actDownload->setEnabled(true);
+        ui->actDelete->setEnabled(true);
+        ui->textBrowser->append(QString("已连接 %1:%2 ").arg(lineServerIp->text()).arg(spinPortEdit->value()));
+    };
+
+    // 只要有一个连接成功, 调用successHandler
+    connect(m_tcpClient, &TcpClient::tcpConnectSuccess, this, connectSuccessHandler);
+    connect(m_udpClient, &UdpClient::setUdpConnectInfoSuccess, this, connectSuccessHandler);
+
+    // 连接失败
+    connect(m_tcpClient, &TcpClient::tcpConnectFailed, this, [this](){
+        ui->textBrowser->append("TCP连接失败！");
+    });
+    connect(m_udpClient, &UdpClient::setUdpConnectInfoFailed, this, [this](){
+        ui->textBrowser->append("UDP设置连接失败，检查ip和端口号格式是否正确");
+    });
+
+
+
+
+    auto disconnectSuccessHander = [this](){
+        protocolComboBox->setEnabled(true);
+        ui->actConnect->setEnabled(true);
+        ui->actDisconnect->setEnabled(false);
+    };
+
+    connect(m_tcpClient, &TcpClient::tcpDisconnectSuccess, this, disconnectSuccessHander);
+    connect(m_udpClient, &UdpClient::udpCloseSuccess, this, disconnectSuccessHander);
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
     delete m_fileTransferWidget;
-    delete m_fileClient;
+    m_tcpThread->quit();
+    m_tcpThread->wait();
+    m_udpThread->quit();
+    m_tcpThread->wait();
+    m_fileThread->quit();
+    m_fileThread->wait();
 }
 
 QString MainWindow::getLocalIP()
@@ -210,7 +283,7 @@ void MainWindow::onListViewClicked(const QModelIndex &index)
     if (fileInfo.isDir()) {
         details = QString("Directory:\n %1").arg(fileInfo.filePath());
     } else {
-        details = QString("File:\n %1\n" "Size:\n %2\n" "Type:\n %3\n" "Last Modified:\n %4\n")
+        details = QString("File:\n  %1\n" "Size:\n  %2\n" "Type:\n  %3\n" "Last Modified:\n  %4\n")
                       .arg(fileInfo.filePath())
                       .arg(locale.formattedDataSize(fileInfo.size()))
                       .arg(fileInfo.suffix().isEmpty() ? "Unknown" : fileInfo.suffix())
@@ -223,45 +296,37 @@ void MainWindow::onListViewClicked(const QModelIndex &index)
 }
 
 void MainWindow::on_actConnect_triggered(){
-    bool isConnect = 0;
 
     if (m_selectedProtocol == 0) { // 选择TCP
-        isConnect = m_tcpClient->connectToServer(lineServerIp->text(), spinPortEdit->value()); // 连接到TCP服务器
+        emit startTcpConnect(lineServerIp->text(), spinPortEdit->value());
     } else if (m_selectedProtocol == 1) { // 选择UDP
-        isConnect = m_udpClient->setConnectInfo(lineServerIp->text(), spinPortEdit->value());
+        emit startUdpConnect(lineServerIp->text(), spinPortEdit->value());
     }
 
-    // 展示文件树
-    ui->treeView_2->setModel(m_fileClient->getModel());
-
-    if(isConnect){
-        ui->actConnect->setEnabled(false);
-        ui->actDisconnect->setEnabled(true);
-        ui->actUpload->setEnabled(true);
-        ui->actDownload->setEnabled(true);
-        ui->actDelete->setEnabled(true);
-        ui->textBrowser->append(QString("已连接 %1:%2 ").arg(lineServerIp->text()).arg(spinPortEdit->value()));
-    }else{
-        ui->textBrowser->append("连接失败！");
-    }
 }
 
 void MainWindow::on_actDisconnect_triggered(){
-    bool isDisconnect = 0;
 
     if (m_selectedProtocol == 0) { // TCP
-        isDisconnect = m_tcpClient->disconnectFromServer(); // 断开TCP连接
+
+        emit tcpDisconnect(); // 断开TCP连接
         ui->textBrowser->append("已断开TCP连接！");
+
     } else if (m_selectedProtocol == 1) { // UDP
-        isDisconnect = m_udpClient->closeUdpSocket(); // 关闭UDP套接字
+
+        emit udpDisconnect(); // 关闭UDP套接字
         ui->textBrowser->append("已关闭UDP套接字！");
     }
 
-    if(isDisconnect == 1){ // 如果断连成功
-        protocolComboBox->setEnabled(true);
-        ui->actConnect->setEnabled(true);
-        ui->actDisconnect->setEnabled(false);
-    }
+    // auto successHander = [this](){
+    //     protocolComboBox->setEnabled(true);
+    //     ui->actConnect->setEnabled(true);
+    //     ui->actDisconnect->setEnabled(false);
+    // };
+
+    // connect(m_tcpClient, &TcpClient::tcpDisconnectSuccess, this, successHander);
+    // connect(m_udpClient, &UdpClient::udpCloseSuccess, this, successHander);
+
 }
 
 void MainWindow::on_actUpload_triggered(){
@@ -270,19 +335,20 @@ void MainWindow::on_actUpload_triggered(){
     // connect(m_fileClient, &FileClient::uploadBasicInfo, m_fileTransferWidget, &FileTransferWidget::setBasicInfo);
     // connect(m_fileClient, &FileClient::uploadProgressInfo, m_fileTransferWidget, &FileTransferWidget::setProgressInfo);
     // 弹出进度窗口
-    m_fileClient->requestUpload(ui->pathLineEdit->text());
+    emit requestUpload(ui->pathLineEdit->text());
+    // m_fileClient->requestUpload(ui->pathLineEdit->text());
 
     // fileTransferWidget->setWindowModality(Qt::ApplicationModal); // 设置为模态对话框
     // m_fileTransferWidget->setAttribute(Qt::WA_DeleteOnClose); // 关闭的时候删除
 
-    // m_fileTransferWidget->show();
+    m_fileTransferWidget->show();
 
 
 }
 
-void MainWindow::on_refreshButton_clicked()
-{
-    m_fileClient->requestFileTree();
+void MainWindow::on_refreshButton_clicked(){
+    emit requestFileTree();
+    // m_fileClient->requestFileTree();
 }
 
 void MainWindow::on_actDelete_triggered(){
@@ -293,7 +359,8 @@ void MainWindow::on_actDelete_triggered(){
         QString fileName = model->data(index, Qt::DisplayRole).toString();
         qDebug() << "Selected file:" << fileName;
         // 调用请求删除函数并传递文件名作为参数
-        m_fileClient->requestDelete(fileName);
+        emit requestDelete(fileName);
+        // m_fileClient->requestDelete(fileName);
     } else {
         qDebug() << "未选择任何文件！";
     }
@@ -307,7 +374,8 @@ void MainWindow::on_actDownload_triggered() {
         QString fileName = model->data(index, Qt::DisplayRole).toString();
         qDebug() << "Selected file:" << fileName;
         // 调用请求下载函数并传递文件名作为参数
-        m_fileClient->requestDownload(fileName);
+        emit requestDownload(fileName);
+        // m_fileClient->requestDownload(fileName);
     } else {
         qDebug() << "未选中任何文件！";
     }
@@ -319,18 +387,48 @@ void MainWindow::onProtocolChanged(int index)
     if (selectedProtocol == "TCP") {
         // 切换到 TCP 处理
         m_selectedProtocol = 0;
+        connect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, m_tcpClient, &TcpClient::enqueuePacket, Qt::UniqueConnection);
+        disconnect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, m_udpClient, &UdpClient::sendDatagram);
         ui->textBrowser->append("切换到 TCP 处理");
-        m_udpClient->closeUdpSocket(); // 关闭 UDP 套接字
-        protocolComboBox->setEnabled(false);
 
     } else if (selectedProtocol == "UDP") {
         // 切换到 UDP 处理
         m_selectedProtocol = 1;
-        ui->textBrowser->append("切换到 UDP 处理");
-        m_tcpClient->disconnectFromServer();
-        protocolComboBox->setEnabled(false);
+        connect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, m_udpClient, &UdpClient::sendDatagram, Qt::UniqueConnection);
+        disconnect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, m_tcpClient, &TcpClient::enqueuePacket);
 
+        ui->textBrowser->append("切换到 UDP 处理");
     }
 }
+
+
+// 展示其它类传递的消息
+void MainWindow::displayState(const QString &message){
+
+
+}
+
+// 展示套接字状态变化
+void MainWindow::onSocketStateChanged(QString stateString) {
+    stateQueue.append(stateString);
+
+    if (!processing) {
+        processing = true;
+        processNextState();
+    }
+}
+
+// 使用队列缓存套接字状态
+void MainWindow::processNextState() {
+    if (!stateQueue.isEmpty()) {
+        QString nextState = stateQueue.takeFirst();
+        LabSocketState->setText(nextState);
+
+        QTimer::singleShot(500, this, &MainWindow::processNextState);
+    } else {
+        processing = false;
+    }
+}
+
 
 

@@ -15,13 +15,26 @@ public:
     void sendDatagram(const QByteArray &datagram);
 
     // 设置服务器ip和端口号
-    bool setConnectInfo(const QString serverIp, qint16 serverPort);
+    void setConnectInfo(const QString serverIp, qint16 serverPort);
 
     // 关闭 udp 套接字
-    bool closeUdpSocket();
+    void closeUdpSocket();
+
+    // 初始化函数
+    void init();
 
 signals:
+    // 设置连接成功
     void setUdpConnectInfoSuccess();
+
+    // 设置连接失败
+    void setUdpConnectInfoFailed();
+
+    // 关闭套接字成功
+    void udpCloseSuccess();
+
+    // 关闭套接字失败
+    void udpCloseFailed();
 
     // 准备好解析协议
     void readyForProtocolParse(const QByteArray &data);
