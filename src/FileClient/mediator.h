@@ -7,7 +7,7 @@
 #include "udpclient.h"
 #include "protocolpacketfactory.h"
 #include "datapacketfactory.h"
-#include "filetransferwidget.h"
+// #include "syncfiletransferui.h"
 
 class Mediator : public QObject
 {
@@ -17,7 +17,7 @@ public:
         FileClient *m_fileClient,
         TcpClient *m_tcpClient,
         UdpClient *m_udpClient,
-        FileTransferWidget *m_fileTransferWidget,
+        // SyncFileTransferUI *m_syncFileFileTransferUI,
         ProtocolPacketFactory *m_ppf,
         DataPacketFactory *m_dpf,
         bool m_selectedProtocol,
@@ -30,7 +30,7 @@ private:
     UdpClient *m_udpClient = nullptr;
     ProtocolPacketFactory *m_ppf = nullptr;
     DataPacketFactory *m_dpf = nullptr;
-    FileTransferWidget *m_fileTransferWidget = nullptr;
+    // SyncFileTransferUI *m_syncFileFileTransferUI = nullptr;
     bool m_selectedProtocol = 0; // 默认使用TCP
 };
 

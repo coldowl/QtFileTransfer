@@ -47,29 +47,12 @@ public:
     void enqueuePacket(const QByteArray &packet);
 
 signals:
-    // // 获取文件列表
-    // void getFileList();
-
-    // // 获取文件树
-    // void getFileTree();
-
-    // // 请求上传文件
-    // void requestUploadFile(QDataStream &in);
-
-    // // 接收上传文件
-    // void uploadFileReceived(QDataStream &in);
-
-    // // 请求下载文件
-    // void requestDownloadFile(QDataStream &in);
-
-    // // 客户端准备好接收文件
-    // void receiveFileReady();
-
-    // // 请求删除文件
-    // void requestDeleteFile(QDataStream &in);
 
     // 准备好解协议
     void readyForProtocolParse(const QByteArray &protocolPacket);
+
+    // 用于发送 socket 状态改变的通知
+    void stateChanged(QString stateString);
 
 private slots:
     // 处理新连接
@@ -78,8 +61,8 @@ private slots:
     // 处理客户端的请求
     void onReadyRead();
 
-
-
+    // 套接字状态改变
+    void onStateChanged(QAbstractSocket::SocketState state);
 private:
 
     QTcpSocket *m_socket = nullptr;

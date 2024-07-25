@@ -4,7 +4,7 @@ Mediator::Mediator(
     FileClient *fileClient,
     TcpClient *tcpClient,
     UdpClient *udpClient,
-    FileTransferWidget *fileTransferWidget,
+    // SyncFileTransferUI *syncFileFileTransferUI,
     ProtocolPacketFactory *ppf,
     DataPacketFactory *dpf,
     bool selectedProtocol,
@@ -15,7 +15,7 @@ Mediator::Mediator(
     , m_udpClient(udpClient)
     , m_ppf(ppf)
     , m_dpf(dpf)
-    , m_fileTransferWidget(fileTransferWidget)
+    // , m_syncFileFileTransferUI(syncFileFileTransferUI)
     , m_selectedProtocol(selectedProtocol)
 {
     // 解析协议包
@@ -31,10 +31,6 @@ Mediator::Mediator(
     // 发送协议包
     connect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, m_tcpClient, &TcpClient::enqueuePacket);
     connect(m_ppf, &ProtocolPacketFactory::wrappedProtocolPacket, m_udpClient, &UdpClient::sendDatagram);
-
-    // 文件传输窗口
-    connect(m_fileClient, &FileClient::uploadBasicInfo, m_fileTransferWidget, &FileTransferWidget::setBasicInfo);
-    connect(m_fileClient, &FileClient::progressUpdated, m_fileTransferWidget, &FileTransferWidget::setProgress);
 
 
     // 若TCP连接成功，先请求文件树

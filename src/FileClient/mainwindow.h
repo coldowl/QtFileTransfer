@@ -16,6 +16,8 @@
 #include "filetransferwidget.h"
 #include "protocolpacketfactory.h"
 #include "datapacketfactory.h"
+#include "syncfiletransferui.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -50,12 +52,15 @@ private slots:
 
     void onProtocolChanged(int index);
 
-    // 展示其它类发送的状态信息
     void displayState(const QString &message);
 
     void onSocketStateChanged(QString stateString);
 
     void processNextState();
+
+    void initUi();
+    void threadHandle();
+    void connectSet();
 signals:
     void startTcpConnect(const QString ip, quint16 port);
     void startUdpConnect(const QString ip, quint16 port);
@@ -71,13 +76,14 @@ private:
     Ui::MainWindow *ui;
     FileTransferWidget *fileTransferWidget;
 
-    QFileSystemModel *model;//定义数据模型变量
+    QFileSystemModel *m_model;//定义数据模型变量
     QString getLocalIP();
 
     TcpClient *m_tcpClient;
     UdpClient *m_udpClient;
     FileClient *m_fileClient;
     FileTransferWidget *m_fileTransferWidget;
+    SyncFileTransferUI *m_syncFileFileTransferUI;
     ProtocolPacketFactory *m_ppf;
     DataPacketFactory *m_dpf;
     QThread *m_tcpThread;
@@ -86,14 +92,14 @@ private:
 
     bool m_selectedProtocol = 0; // 0表示选择TCP协议，1表示选择UDP协议，默认是0
 
-    QProgressBar *downloadProgressBar;
-    QLineEdit *lineServerIp;
-    QSpinBox *spinPortEdit;
-    QComboBox *protocolComboBox;
-    QLabel *LabSocketState;
+    // 桌面控件
+    QLineEdit *m_lineServerIp;
+    QSpinBox *m_spinPortEdit;
+    QComboBox *m_protocolComboBox;
+    QLabel *m_labSocketState;
 
-    QStringList stateQueue;
-    bool processing = false;
+    QStringList m_stateQueue;
+    bool m_processing = false;
 
 
 };

@@ -12,6 +12,7 @@
 #include <QHostAddress>
 #include <QHostInfo>
 #include <QLabel>
+#include <QTimer>
 #include <QSpinBox>
 #include <QString>
 #include <QHostAddress>
@@ -44,11 +45,11 @@ MainWindow::MainWindow(QWidget *parent)
     // // 安装自定义消息处理器
     // qInstallMessageHandler(customMessageHandler);
 
-    model = new QFileSystemModel(this);
-    model -> setRootPath("C:/Users/COLDOWL/Desktop/open"); // 方便调试
+    m_model = new QFileSystemModel(this);
+    m_model -> setRootPath("C:/Users/COLDOWL/Desktop/open"); // 方便调试
     // model->setRootPath(QDir::currentPath());
 
-    ui->treeView->setModel(model);
+    ui->treeView->setModel(m_model);
     ui->treeView->setHeaderHidden(true);
 
     QList<int> columnsToHide = {1, 2, 3};  // 定义一个需要隐藏的列的列表
@@ -56,12 +57,12 @@ MainWindow::MainWindow(QWidget *parent)
         ui->treeView->setColumnHidden(column, true); //依次隐藏 Size、Type、Date Modified 列
     }
 
-    ui->listView->setModel(model);
+    ui->listView->setModel(m_model);
 
     //状态栏
-    QLabel *LabSocketState=new QLabel("Socket状态：");//状态栏标签
-    LabSocketState->setMinimumWidth(250);
-    ui->statusbar->addWidget(LabSocketState);
+    m_labSocketState=new QLabel("Socket状态：未获取");//状态栏标签
+    m_labSocketState->setMinimumWidth(250);
+    ui->statusbar->addWidget(m_labSocketState);
 
     QString localIP=getLocalIP();//本机IP
     QLabel *LabIpState=new QLabel("IP地址："+localIP);//状态栏标签
@@ -71,11 +72,11 @@ MainWindow::MainWindow(QWidget *parent)
     //工具栏
     ui->toolBar->addSeparator();//分隔条
     ui->toolBar->addWidget(new QLabel("端口号: "));
-    spinPortEdit = new QSpinBox();
-    spinPortEdit->setRange(0,65535);
-    spinPortEdit->setValue(5555);
+    m_spinPortEdit = new QSpinBox();
+    m_spinPortEdit->setRange(0,65535);
+    m_spinPortEdit->setValue(5555);
 
-    ui->toolBar->addWidget(spinPortEdit);
+    ui->toolBar->addWidget(m_spinPortEdit);
 
     //Action栏
     ui->actDisconnect->setEnabled(false);
@@ -93,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
     // 当选中listView或者treeview中的项目，pathLineEdit 实时显示当前文件路径
     auto updatePath = [=](const QModelIndex &current) {
         // 获取当前选定项的路径
-        QString path = model->filePath(current);
+        QString path = m_model->filePath(current);
         ui->pathLineEdit->setText(path);
     };
     connect(ui->listView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
@@ -101,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 中介者管理connect函数
     Mediator mediator(m_fileServer, m_tcpServer, m_udpServer, m_ppf, m_dpf);
+    connect(m_tcpServer, &TcpServer::stateChanged, this, &MainWindow::onSocketStateChanged);
+
 
 
 }
@@ -136,9 +139,9 @@ QString MainWindow::getLocalIP()
 void MainWindow::onListViewClicked(const QModelIndex &index)
 {
     // 1.可在listviw进入文件夹，同时在treeView展开点击项目的父文件夹
-    QString path = model->filePath(index);    // 获取点击的项对应的路径
+    QString path = m_model->filePath(index);    // 获取点击的项对应的路径
 
-    if (model->isDir(index)) { // 检查点击的项是否为目录
+    if (m_model->isDir(index)) { // 检查点击的项是否为目录
 
         ui->listView->setRootIndex(index);// 进入文件夹，更新listView
 
@@ -147,7 +150,7 @@ void MainWindow::onListViewClicked(const QModelIndex &index)
         QString parentPath = dir.absolutePath();
 
 
-        QModelIndex parentIndex = model->index(parentPath);// 根据父文件夹路径找到对应的索引
+        QModelIndex parentIndex = m_model->index(parentPath);// 根据父文件夹路径找到对应的索引
 
         ui->treeView->expand(parentIndex);// 在treeView展开父文件夹
     }
@@ -155,7 +158,7 @@ void MainWindow::onListViewClicked(const QModelIndex &index)
 
 
     // 2.打印文件详细信息到文本窗口
-    QFileInfo fileInfo = model->fileInfo(index);
+    QFileInfo fileInfo = m_model->fileInfo(index);
     QString details;
 
     if (fileInfo.isDir()) {
@@ -175,10 +178,10 @@ void MainWindow::onListViewClicked(const QModelIndex &index)
 
 void MainWindow::on_actListen_triggered(){
 
-    m_tcpServer->listen(QHostAddress::Any, spinPortEdit->value());
+    m_tcpServer->listen(QHostAddress::Any, m_spinPortEdit->value());
     ui->actListen->setEnabled(false);
     ui->actDisconnect->setEnabled(true);
-    ui->textBrowser->append(QString("正在监听 %1 端口...").arg(spinPortEdit->value()));
+    ui->textBrowser->append(QString("正在监听 %1 端口...").arg(m_spinPortEdit->value()));
 }
 
 
@@ -200,3 +203,25 @@ void MainWindow::on_actChooseFolder_triggered(){
     }
 }
 
+
+// 展示套接字状态变化
+void MainWindow::onSocketStateChanged(QString stateString) {
+    m_stateQueue.append(stateString);
+
+    if (!m_processing) {
+        m_processing = true;
+        processNextState();
+    }
+}
+
+// 使用队列缓存套接字状态
+void MainWindow::processNextState() {
+    if (!m_stateQueue.isEmpty()) {
+        QString nextState = m_stateQueue.takeFirst();
+        m_labSocketState->setText(nextState);
+
+        QTimer::singleShot(500, this, &MainWindow::processNextState);
+    } else {
+        m_processing = false;
+    }
+}

@@ -63,34 +63,41 @@
           </widget>
           <widget class="QGroupBox" name="groupBox">
            <property name="title">
-            <string>客户端</string>
+            <string>服务器</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_5">
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <layout class="QHBoxLayout" name="pathHorLayout">
+              <item>
+               <widget class="QLineEdit" name="lineEdit"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="refreshButton">
+                <property name="toolTip">
+                 <string>刷</string>
+                </property>
+                <property name="whatsThis">
+                 <string>刷新</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="resource.qrc">
+                  <normaloff>:/icons/refresh.png</normaloff>:/icons/refresh.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
             <item row="1" column="0">
              <widget class="QTreeView" name="treeView_2"/>
-            </item>
-            <item row="0" column="0">
-             <widget class="QPushButton" name="refreshButton">
-              <property name="toolTip">
-               <string>刷</string>
-              </property>
-              <property name="whatsThis">
-               <string>刷新</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="resource.qrc">
-                <normaloff>:/icons/refresh.png</normaloff>:/icons/refresh.png</iconset>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>20</width>
-                <height>20</height>
-               </size>
-              </property>
-             </widget>
             </item>
            </layout>
           </widget>
@@ -101,15 +108,30 @@
       <widget class="QWidget" name="widget_2" native="true">
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="0">
-         <widget class="QGroupBox" name="groupBox_4">
-          <property name="title">
-           <string>详细信息</string>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
           </property>
-          <layout class="QGridLayout" name="gridLayout">
-           <item row="0" column="0">
-            <widget class="QTextEdit" name="datailTextEdit"/>
-           </item>
-          </layout>
+          <widget class="QWidget" name="tab">
+           <attribute name="title">
+            <string>详细信息</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_8">
+            <item row="0" column="0">
+             <widget class="QTextEdit" name="datailTextEdit"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_2">
+           <attribute name="title">
+            <string>上传记录</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_3">
+           <attribute name="title">
+            <string>下载记录</string>
+           </attribute>
+          </widget>
          </widget>
         </item>
         <item row="1" column="0">

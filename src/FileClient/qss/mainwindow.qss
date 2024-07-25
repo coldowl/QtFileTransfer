@@ -3,31 +3,6 @@
     font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
 }
 
-/* PushButton */
-/* QPushButton
-{
-    background:white;
-    color:#0085ff;
-    border:2px solid #0085ff;
-    font:15px "Microsoft YaHei UI";
-    border-radius:10px;
-    padding:6px 12px 0 0;
-}
-
-QPushButton:hover
-{
-    background:#0085ff;
-    color:white;
-    border:none;
-}
-QPushButton:pressed
-{
-    background:#0065c3;
-    color:white;
-    border:none;
-} */
-
-
 /* TreeView */
 QTreeView {
     border: 1px solid #d0d0d0;
@@ -37,29 +12,23 @@ QTreeView::item:hover {
 
 }
 QTreeView::item:selected {
-
 }
 
-/*QTreeView */QScrollBar:vertical {
-    /* 设置滚动条宽度 */
-    width: 8px; /* 根据需要调整宽度 */
-
-    /* 其他样式设置 */
+QScrollBar {
+    width: 8px;
     border: none;
     background: rgba(0,0,0,0%);
     margin: 0px;
-    padding-top: 2px; /* 调整顶部留空，如果需要的话 */
+    padding-top: 2px; /* 调整顶部留空 */
 }
 
-/*QTreeView */QScrollBar::handle:vertical{
+QScrollBar::handle {
     /* 滚动条拖动部分的样式 */
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                stop: 0 rgb(100, 100, 100),
-                                stop: 1 rgb(200, 200, 200)); /* 自定义颜色 */
+    /*background: qlineargradient(x1:0, y1:0, x2:1, y2:0,stop: 0 rgb(100, 100, 100),stop: 1 rgb(200, 200, 200));*/
     min-height: 20px; /* 拖动块的最小高度 */
 }
 
-/*QTreeView */QScrollBar::add-line:vertical, QTreeView QScrollBar::sub-line:vertical {
+QScrollBar::add-line, QScrollBar::sub-line {
     /* 箭头部分的样式，可以隐藏 */
     height: 0;
     width: 0;
@@ -77,13 +46,13 @@ QListView::item:selected {
 
 /* StatusBar */
 QStatusBar {
-    background-color: yellow;
+    background-color: #cdcdcd;
     border-top: 1px solid #0056b3;
 }
 
 /* ToolBar */
 QToolBar {
-    background-color: white;
+    background-color: #cdcdcd;
     color: white;
     border-bottom: 1px solid #0056b3;
 }
@@ -125,6 +94,11 @@ QGroupBox::title {
     border-radius: 5px;
 }
 
+/* TabWidget */
+QTabWidget::pane {
+    border: 1px solid black;
+}
+
 /* TextBrowser */
 QTextBrowser {
     border: 1px solid #d0d0d0;
@@ -150,15 +124,32 @@ QSplitter::handle:pressed {
 
 }
 
+/* SpinBox */
+QSpinBox{
+    background-color: #e1e1e1;
+}
+
+
 /* PathLineEdit */
+QLineEdit{
+    background-color: #e1e1e1;
+    selection-color: #e9ecef;
+    selection-background-color: #495057;
+
+}
+
 QLineEdit#pathLineEdit{
-    color: blue;
-    background-color: yellow;
-    selection-color: yellow;
-    selection-background-color: blue;
     border: 1px solid #d0d0d0;
     border-radius: 5px;
     padding: 5px;
+}
+QLineEdit#lineEdit{
+    border: 1px solid #d0d0d0;
+    border-right: none;
+    border-radius: 5px;
+    padding: 3px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
 }
 QLineEdit:hover {
     border: 1px solid #007BFF;
@@ -175,3 +166,24 @@ QLabel {
 QLabel:hover {
 
 }
+
+/* PushButton */
+/*QPushButton {
+    background: transparent;
+    border: none;
+    color: blue;
+    size: 16px;
+    padding: 5px;
+}*/
+
+QPushButton#refreshButton{
+    background-color: #e1e1e1;
+    border: 1px solid #d0d0d0;
+    border-left: none;
+    border-radius: 5px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding: 4px;
+    image:url(:/icons/refresh.png);
+}
+
