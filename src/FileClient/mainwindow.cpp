@@ -38,112 +38,14 @@ MainWindow::MainWindow(QWidget *parent)
     initUi();
     threadHandle();
     setConnect();
-
-    // 使用信号槽确保在 init 之后再调用成员方法
-    connect(this, &MainWindow::startTcpConnect, m_tcpClient, &TcpClient::connectToServer);
-    connect(this, &MainWindow::startUdpConnect, m_udpClient, &UdpClient::setConnectInfo);
-    connect(this, &MainWindow::tcpDisconnect, m_tcpClient, &TcpClient::disconnectFromServer);
-    connect(this, &MainWindow::udpDisconnect, m_udpClient, &UdpClient::closeUdpSocket);
-    connect(this, &MainWindow::requestUpload, m_fileClient, &FileClient::requestUpload);
-    connect(this, &MainWindow::requestFileTree, m_fileClient, &FileClient::requestFileTree);
-    connect(this, &MainWindow::requestDelete, m_fileClient, &FileClient::requestDelete);
-    connect(this, &MainWindow::requestDownload, m_fileClient, &FileClient::requestDownload);
-
-
-    // 协议选择
-    connect(m_protocolComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onProtocolChanged);
-
-    // treeView 和 listView
-    connect(ui->treeView, &QTreeView::clicked, this, [=](const QModelIndex &index) {
-        ui->listView->setRootIndex(index);
-        ui->datailTextEdit->clear();
-    });
-
-    connect(ui->listView, &QListView::clicked, this, &MainWindow::onListViewClicked);
-    connect(ui->treeView, &QListView::clicked, this, &MainWindow::onListViewClicked);
-
-    // 当选中listView或者treeview中的项目，pathLineEdit 实时显示当前文件路径
-    auto updatePath = [=](const QModelIndex &current) {
-        QString path = m_model->filePath(current);        // 获取当前选定项的路径
-        ui->pathLineEdit->setText(path);
-    };
-    connect(ui->listView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
-    connect(ui->treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
-
-    // 中介者管理connect函数
-    Mediator mediator(m_fileClient, m_tcpClient, m_udpClient, m_ppf, m_dpf, m_selectedProtocol);
-
-    connect(m_tcpClient, &TcpClient::stateChanged, this, &MainWindow::onSocketStateChanged);
-
-    // 展示文件树
-    connect(m_fileClient, &FileClient::fileTreeModel, this, [this](QStandardItemModel *model){
-        ui->treeView_2->setModel(model);
-        QStandardItem *rootItem = model->invisibleRootItem()->child(0); // 获取根项（顶级文件夹）
-        ui->lineEdit->setText(rootItem->text());
-        ui->treeView_2->expandAll(); // 展开所有项以确保视图更新
-    });
-
-
-    // 协议连接成功
-    auto connectSuccessHandler = [this]() {
-        m_protocolComboBox->setEnabled(false);
-        ui->actConnect->setEnabled(false);
-        ui->actDisconnect->setEnabled(true);
-        ui->actUpload->setEnabled(true);
-        ui->actDownload->setEnabled(true);
-        ui->actDelete->setEnabled(true);
-        ui->textBrowser->append(QString("已连接 %1:%2 ").arg(m_lineServerIp->text()).arg(m_spinPortEdit->value()));
-    };
-    connect(m_tcpClient, &TcpClient::tcpConnectSuccess, this, connectSuccessHandler);
-    connect(m_udpClient, &UdpClient::setUdpConnectInfoSuccess, this, connectSuccessHandler);
-
-    // 协议连接失败
-    connect(m_tcpClient, &TcpClient::tcpConnectFailed, this, [this](){
-        ui->textBrowser->append("TCP连接失败！");
-    });
-    connect(m_udpClient, &UdpClient::setUdpConnectInfoFailed, this, [this](){
-        ui->textBrowser->append("UDP设置连接失败，检查ip和端口号格式是否正确");
-    });
-
-
-    // 协议断连成功
-    auto disconnectSuccessHander = [this](){
-        m_protocolComboBox->setEnabled(true);
-        ui->actConnect->setEnabled(true);
-        ui->actDisconnect->setEnabled(false);
-    };
-    connect(m_tcpClient, &TcpClient::tcpDisconnectSuccess, this, disconnectSuccessHander);
-    connect(m_udpClient, &UdpClient::udpCloseSuccess, this, disconnectSuccessHander);
-
-
-    // 文件传输窗口
-    connect(m_fileClient, &FileClient::uploadedFileInfo, m_syncFileFileTransferUI, &SyncFileTransferUI::updateFileInfo);
-    connect(m_fileClient, &FileClient::bytesAlreadySent, m_syncFileFileTransferUI, &SyncFileTransferUI::updateProgress);
-    connect(m_fileClient, &FileClient::downloadedFileInfo,m_syncFileFileTransferUI, &SyncFileTransferUI::updateFileInfo);
-    connect(m_fileClient, &FileClient::bytesAlreadyRcv, m_syncFileFileTransferUI, &SyncFileTransferUI::updateProgress);
-
-    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::fileInfoUpdated, m_fileTransferWidget, &FileTransferWidget::setFileInfo);
-    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::progressUpdated, m_fileTransferWidget, &FileTransferWidget::setProgress);
-    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::speedUpdated, m_fileTransferWidget, &FileTransferWidget::setSpeed);
-    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::restFileSizeUpdated, m_fileTransferWidget, &FileTransferWidget::setRestFileSize);
-    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::finishTimeUpdated, m_fileTransferWidget, &FileTransferWidget::setFinishTime);
-
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow(){
     delete ui;
     delete m_fileTransferWidget;
-    // m_tcpThread->quit();
-    // m_tcpThread->wait();
-    // m_udpThread->quit();
-    // m_tcpThread->wait();
-    // m_fileThread->quit();
-    // m_fileThread->wait();
 }
 
-QString MainWindow::getLocalIP()
-{
+QString MainWindow::getLocalIP(){
     QString hostName=QHostInfo::localHostName();//本地主机名
     QHostInfo hostInfo=QHostInfo::fromName(hostName);
     QString localIP="";
@@ -161,8 +63,7 @@ QString MainWindow::getLocalIP()
     return localIP;
 }
 
-void MainWindow::onListViewClicked(const QModelIndex &index)
-{
+void MainWindow::onListViewClicked(const QModelIndex &index){
     // 1.可在listviw进入文件夹，同时在treeView展开点击项目的父文件夹
     QString path = m_model->filePath(index);    // 获取点击的项对应的路径
 
@@ -418,6 +319,93 @@ void MainWindow::threadHandle(){
 }
 
 void MainWindow::setConnect(){
+    // 使用信号槽确保在 init 之后再调用成员方法
+    connect(this, &MainWindow::startTcpConnect, m_tcpClient, &TcpClient::connectToServer);
+    connect(this, &MainWindow::startUdpConnect, m_udpClient, &UdpClient::setConnectInfo);
+    connect(this, &MainWindow::tcpDisconnect, m_tcpClient, &TcpClient::disconnectFromServer);
+    connect(this, &MainWindow::udpDisconnect, m_udpClient, &UdpClient::closeUdpSocket);
+    connect(this, &MainWindow::requestUpload, m_fileClient, &FileClient::requestUpload);
+    connect(this, &MainWindow::requestFileTree, m_fileClient, &FileClient::requestFileTree);
+    connect(this, &MainWindow::requestDelete, m_fileClient, &FileClient::requestDelete);
+    connect(this, &MainWindow::requestDownload, m_fileClient, &FileClient::requestDownload);
+
+    // 协议选择
+    connect(m_protocolComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onProtocolChanged);
+
+    // treeView 和 listView
+    connect(ui->treeView, &QTreeView::clicked, this, [=](const QModelIndex &index) {
+        ui->listView->setRootIndex(index);
+        ui->datailTextEdit->clear();
+    });
+
+    connect(ui->listView, &QListView::clicked, this, &MainWindow::onListViewClicked);
+    connect(ui->treeView, &QListView::clicked, this, &MainWindow::onListViewClicked);
+
+    // 当选中listView或者treeview中的项目，pathLineEdit 实时显示当前文件路径
+    auto updatePath = [=](const QModelIndex &current) {
+        QString path = m_model->filePath(current);        // 获取当前选定项的路径
+        ui->pathLineEdit->setText(path);
+    };
+    connect(ui->listView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
+    connect(ui->treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, updatePath);
+
+    // 中介者管理connect函数
+    Mediator mediator(m_fileClient, m_tcpClient, m_udpClient, m_ppf, m_dpf, m_selectedProtocol);
+
+    connect(m_tcpClient, &TcpClient::stateChanged, this, &MainWindow::onSocketStateChanged);
+
+    // 展示文件树
+    connect(m_fileClient, &FileClient::fileTreeModel, this, [this](QStandardItemModel *model){
+        ui->treeView_2->setModel(model);
+        QStandardItem *rootItem = model->invisibleRootItem()->child(0); // 获取根项（顶级文件夹）
+        ui->lineEdit->setText(rootItem->text());
+        ui->treeView_2->expandAll(); // 展开所有项以确保视图更新
+    });
+
+
+    // 协议连接成功
+    auto connectSuccessHandler = [this]() {
+        m_protocolComboBox->setEnabled(false);
+        ui->actConnect->setEnabled(false);
+        ui->actDisconnect->setEnabled(true);
+        ui->actUpload->setEnabled(true);
+        ui->actDownload->setEnabled(true);
+        ui->actDelete->setEnabled(true);
+        ui->textBrowser->append(QString("已连接 %1:%2 ").arg(m_lineServerIp->text()).arg(m_spinPortEdit->value()));
+    };
+    connect(m_tcpClient, &TcpClient::tcpConnectSuccess, this, connectSuccessHandler);
+    connect(m_udpClient, &UdpClient::setUdpConnectInfoSuccess, this, connectSuccessHandler);
+
+    // 协议连接失败
+    connect(m_tcpClient, &TcpClient::tcpConnectFailed, this, [this](){
+        ui->textBrowser->append("TCP连接失败！");
+    });
+    connect(m_udpClient, &UdpClient::setUdpConnectInfoFailed, this, [this](){
+        ui->textBrowser->append("UDP设置连接失败，检查ip和端口号格式是否正确");
+    });
+
+
+    // 协议断连成功
+    auto disconnectSuccessHander = [this](){
+        m_protocolComboBox->setEnabled(true);
+        ui->actConnect->setEnabled(true);
+        ui->actDisconnect->setEnabled(false);
+    };
+    connect(m_tcpClient, &TcpClient::tcpDisconnectSuccess, this, disconnectSuccessHander);
+    connect(m_udpClient, &UdpClient::udpCloseSuccess, this, disconnectSuccessHander);
+
+
+    // 文件传输窗口
+    connect(m_fileClient, &FileClient::uploadedFileInfo, m_syncFileFileTransferUI, &SyncFileTransferUI::updateFileInfo);
+    connect(m_fileClient, &FileClient::bytesAlreadySent, m_syncFileFileTransferUI, &SyncFileTransferUI::updateProgress);
+    connect(m_fileClient, &FileClient::downloadedFileInfo,m_syncFileFileTransferUI, &SyncFileTransferUI::updateFileInfo);
+    connect(m_fileClient, &FileClient::bytesAlreadyRcv, m_syncFileFileTransferUI, &SyncFileTransferUI::updateProgress);
+
+    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::fileInfoUpdated, m_fileTransferWidget, &FileTransferWidget::setFileInfo);
+    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::progressUpdated, m_fileTransferWidget, &FileTransferWidget::setProgress);
+    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::speedUpdated, m_fileTransferWidget, &FileTransferWidget::setSpeed);
+    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::restFileSizeUpdated, m_fileTransferWidget, &FileTransferWidget::setRestFileSize);
+    connect(m_syncFileFileTransferUI, &SyncFileTransferUI::finishTimeUpdated, m_fileTransferWidget, &FileTransferWidget::setFinishTime);
 
 }
 

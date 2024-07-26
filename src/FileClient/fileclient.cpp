@@ -123,16 +123,6 @@ void FileClient::uploadFile(){
 
         qDebug() << "已发送" << bytesSent;
 
-        // QByteArray progressInfo;
-        // QDataStream outInfo(&progressInfo, QIODevice::WriteOnly);
-        // // qint64 test1 = 85;
-        // // qint64 test2 = 100;
-        // // outInfo << test1 << test2;
-        // // progressInfo.append(bytesSent+fileData.size());
-        // outInfo << bytesSent << static_cast<qint64>(fileData.size());
-        // emit uploadProgressInfo(progressInfo); // 给文件传输窗口
-        // qDebug() << "已发射信号";
-
         emit readyForWrap(packet);
     }
 
