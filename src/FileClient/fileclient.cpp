@@ -1,12 +1,10 @@
-#include "fileclient.h"
-#include "tcpclient.h"
-#include "fileclient.h"
 #include <QFileInfo>
 #include <QThread>
 #include <QTimer>
-// #include <QDataStream>
-// #include <QRunnable>
 #include <QCryptographicHash>
+#include "fileclient.h"
+#include "tcpclient.h"
+#include "fileclient.h"
 
 FileClient::FileClient(QObject *parent)
     : QObject(parent){
@@ -102,7 +100,7 @@ void FileClient::requestDelete(const QString &fileName){
 void FileClient::uploadFile(){
     QFile file(m_uploadFilePath);
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning("Failed to open file");
+        qWarning() << "打不开" << m_uploadFilePath;
         return;
     }
 

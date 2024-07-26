@@ -1,6 +1,13 @@
 #忽略所有文件名包含.user的文件
 *.user*
 
+# Ignore node package files
+package-lock.json
+package.json
+
+# Ignore IDE settings
+.idea/
+
 # C++ objects and libs
 *.slo
 *.lo

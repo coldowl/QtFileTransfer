@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     initUi();
     threadHandle();
+    setConnect();
 
     // 使用信号槽确保在 init 之后再调用成员方法
     connect(this, &MainWindow::startTcpConnect, m_tcpClient, &TcpClient::connectToServer);
@@ -414,7 +415,9 @@ void MainWindow::threadHandle(){
     m_udpThread->start();
     m_fileThread->start();
     m_syncThread->start();
+}
 
+void MainWindow::setConnect(){
 
 }
 
