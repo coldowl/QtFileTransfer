@@ -60,7 +60,8 @@ private slots:
 
     void initUi();
     void threadHandle();
-    void connectSet();
+    // void connectSet();
+
 signals:
     void startTcpConnect(const QString ip, quint16 port);
     void startUdpConnect(const QString ip, quint16 port);
