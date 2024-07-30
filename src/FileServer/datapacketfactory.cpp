@@ -9,7 +9,7 @@ DataPacketFactory::DataPacketFactory(QObject *parent)
 
 void DataPacketFactory::parseDataPacket(QByteArray &dataPacket){
     QDataStream in(&dataPacket, QIODevice::ReadOnly);
-    qDebug() << "正在执行parseDataPacket";
+    // qDebug() << "正在执行parseDataPacket";
     ushort command;
     in >> command; // 读取指令字
     qDebug() << "收到指令字:" << Qt::hex << Qt::showbase << command;

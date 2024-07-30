@@ -30,7 +30,6 @@ void TcpClient::init() {
 void TcpClient::connectToServer(const QString &host, quint16 port) {
     m_socket->connectToHost(host, port); // 连接到指定的host和端口
     if (m_socket->waitForConnected()) { // 等待连接
-        qDebug() << "发送信号tcpConnectSuccess";
         emit tcpConnectSuccess(); // 连接成功后发送信号
     }else{
         emit tcpConnectFailed(); // 连接失败
@@ -60,7 +59,7 @@ void TcpClient::onReadyRead() {
 
     // 解协议
     emit readyForProtocolParse(data);
-    qDebug() << "发射readyForProtocolParse";
+    // qDebug() << "发射readyForProtocolParse";
 
 }
 
@@ -93,12 +92,12 @@ void TcpClient::onStateChanged(QAbstractSocket::SocketState state){
     }
 
     emit stateChanged(stateString); // 发送信号，通知 socket 状态已改变
-    qDebug() << "发送socket状态" << stateString;
+    // qDebug() << "发送socket状态" << stateString;
 }
 
 // 发送报文
 void TcpClient::enqueuePacket(const QByteArray &packet) {
-    qDebug() << "正在执行enqueuePacket";
+    // qDebug() << "正在执行enqueuePacket";
     // qDebug() << "协议包：" << packet.toHex();
     m_socket->write(packet); // 将文件数据写入
 }

@@ -32,7 +32,7 @@ void FileServer::sendFileList(){
 
 // 发送文件树给客户端
 void FileServer::sendFileTree(){
-    qDebug() << "正在执行sendFileTree";
+    // qDebug() << "正在执行sendFileTree";
     QByteArray data;
     QDataStream out(&data, QIODevice::WriteOnly);
 
@@ -42,7 +42,7 @@ void FileServer::sendFileTree(){
     sendDirectory(out, m_openPath);    // 递归发送目录结构
 
     emit readyForWrap(data);
-    qDebug() << "发射信号readyForWrap";
+    // qDebug() << "发射信号readyForWrap";
     // m_tcpServer->enqueuePacket(data);
 }
 
@@ -64,7 +64,7 @@ void FileServer::sendDirectory(QDataStream &out, const QDir &dir){
 void FileServer::responseUpload(QByteArray data){
     QDataStream in(&data, QIODevice::ReadOnly);
     in >> m_uploadFileName >> m_uploadFileSize >> m_uploadFileHash;
-    qDebug() << m_uploadFileName << m_uploadFileSize << m_uploadFileHash;
+    qDebug() << "上传文件名" <<m_uploadFileName << "文件大小" << m_uploadFileSize << "哈希" << m_uploadFileHash;
     m_uploadBytesReceived = 0;
 
     if (!m_openPath.exists()) { // 若 openPath 不存在，则在当前目录下创建 openPath
@@ -113,7 +113,7 @@ void FileServer::receiveUpload(QByteArray data){
     m_uploadBytesReceived += chunk.size();
 
     count = ceil((double)m_uploadBytesReceived / 50000);
-    qDebug() << m_uploadBytesReceived << m_uploadFileSize;
+    // qDebug() << m_uploadBytesReceived << m_uploadFileSize;
     if (m_uploadBytesReceived == m_uploadFileSize) {
 
         m_uploadBytesReceived = 0;
@@ -124,7 +124,6 @@ void FileServer::receiveUpload(QByteArray data){
         file.close();
 
         QByteArray fileHash = QCryptographicHash::hash(fileData, QCryptographicHash::Sha256).toHex();
-        qDebug() << QString(fileHash);
 
         if (QString(fileHash) == m_uploadFileHash) {
             out << static_cast<ushort>(UPLOAD_COMPLETE);
@@ -162,7 +161,7 @@ void FileServer::responseDownload(QByteArray data){
         m_downloadFilePath = fullPath;
         file.close();
         out << static_cast<ushort>(DOWNLOAD_FILE_READY) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
-        qDebug() << static_cast<ushort>(DOWNLOAD_FILE_READY) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
+        // qDebug() << static_cast<ushort>(DOWNLOAD_FILE_READY) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
 
     }
 
@@ -189,10 +188,10 @@ void FileServer::sendDownload(){
         QByteArray chunk = fileData.mid(bytesSent, 50000);
 
         out << static_cast<ushort>(DOWNLOAD_FILE) << chunk;
-        qDebug() << ++count << "DOWNLOAD_FILE";
+        // qDebug() << ++count << "DOWNLOAD_FILE";
 
         bytesSent += chunk.size();
-        qDebug() << "已发送" << bytesSent;
+        // qDebug() << "已发送" << bytesSent;
 
         emit readyForWrap(packet);
         // m_tcpServer->enqueuePacket(packet);

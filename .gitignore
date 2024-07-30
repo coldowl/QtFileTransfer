@@ -1,7 +1,15 @@
 #忽略所有文件名包含.user的文件
 *.user*
 
+# Ignore log dir
+/logs
+
+# Ignore empty debug/release dir in src
+/src/debug
+/src/release
+
 # Ignore node package files
+/node_modules
 package-lock.json
 package.json
 

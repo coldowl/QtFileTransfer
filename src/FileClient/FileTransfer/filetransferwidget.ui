@@ -222,12 +222,15 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>剩余时间：</string>
+        <string>剩余时间1：</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="restTimeLabel">
+       <property name="styleSheet">
+        <string notr="true">background: red;</string>
+       </property>
        <property name="text">
         <string>正在计算...                                                                                             </string>
        </property>

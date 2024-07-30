@@ -24,7 +24,6 @@ void TcpServer::onReadyRead() {
 
     // 解协议
     emit readyForProtocolParse(data);
-    qDebug() << "发射readyForProtocolParse";
 
 }
 
@@ -60,7 +59,7 @@ void TcpServer::onStateChanged(QAbstractSocket::SocketState state){
     }
 
     emit stateChanged(stateString); // 发送信号，通知 socket 状态已改变
-    qDebug() << "发送socket状态" << stateString;
+    // qDebug() << "发送socket状态" << stateString;
 }
 
 

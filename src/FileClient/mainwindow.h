@@ -52,8 +52,6 @@ private slots:
 
     void onProtocolChanged(int index);
 
-    void displayState(const QString &message);
-
     void onSocketStateChanged(QString stateString);
 
     void processNextState();

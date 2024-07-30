@@ -51,8 +51,8 @@ void SyncFileTransferUI::updateProgress(qint64 bytesSent) {
             qint64 bytesDiff = currentBytesSent - previousBytesSent;
             double speed = (bytesDiff * 1000.0) / 5; // 字节/秒
             emit speedUpdated(speed);
-            qDebug() << "<previousBytesSent>" << previousBytesSent << "<currentBytesSent>" << currentBytesSent;
-            qDebug() << speed;
+            // qDebug() << "<previousBytesSent>" << previousBytesSent << "<currentBytesSent>" << currentBytesSent;
+            // qDebug() << speed;
 
             // 计算预期下载完成的时间（秒）
             double finishTime = (speed > 0) ? static_cast<double>(restFileSize) / speed : -1;

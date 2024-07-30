@@ -24,11 +24,6 @@ FileTransferWidget::FileTransferWidget(QWidget *parent)
         qDebug() << "打不开style.qss";
     }
 
-    // const QIcon pauseIcon = QApplication::style()->standardIcon(QStyle::SP_MediaPause);
-    // const QIcon cancelIcon = QApplication::style()->standardIcon(QStyle::SP_TitleBarCloseButton);
-    // ui->pcButton->setIcon(pauseIcon);
-    // ui->pcButton->setText("暂停");
-    // ui->cancelButton->setIcon(cancelIcon);
     this->setWindowIcon(QIcon(":/icons/send.png"));
     m_isPause = false;  // 当前未暂停
 

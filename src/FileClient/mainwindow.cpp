@@ -140,11 +140,11 @@ void MainWindow::on_refreshButton_clicked(){
 
 void MainWindow::on_actDelete_triggered(){
     QModelIndex index = ui->treeView_2->currentIndex();
-    qDebug() << "Triggered download, current index:" << index;
+    // qDebug() << "触发删除，当前索引:" << index;
     if (index.isValid()) {
         QAbstractItemModel *model = ui->treeView_2->model();
         QString fileName = model->data(index, Qt::DisplayRole).toString();
-        qDebug() << "Selected file:" << fileName;
+        // qDebug() << "Selected file:" << fileName;
         // 调用请求删除函数并传递文件名作为参数
         emit requestDelete(fileName);
         // m_fileClient->requestDelete(fileName);
@@ -156,11 +156,11 @@ void MainWindow::on_actDelete_triggered(){
 
 void MainWindow::on_actDownload_triggered() {
     QModelIndex index = ui->treeView_2->currentIndex();
-    qDebug() << "Triggered download, current index:" << index;
+    // qDebug() << "触发下载，当前索引:" << index;
     if (index.isValid()) {
         QAbstractItemModel *model = ui->treeView_2->model();
         QString fileName = model->data(index, Qt::DisplayRole).toString();
-        qDebug() << "Selected file:" << fileName;
+        // qDebug() << "已选择文件:" << fileName;
         // 调用请求下载函数并传递文件名作为参数
         emit requestDownload(fileName);
         // m_fileClient->requestDownload(fileName);
@@ -194,12 +194,6 @@ void MainWindow::onProtocolChanged(int index)
 }
 
 
-// 展示其它类传递的消息
-void MainWindow::displayState(const QString &message){
-
-
-}
-
 // 展示套接字状态变化
 void MainWindow::onSocketStateChanged(QString stateString) {
     m_stateQueue.append(stateString);
@@ -221,7 +215,6 @@ void MainWindow::processNextState() {
         m_processing = false;
     }
 }
-
 
 void MainWindow::initUi(){
     // 加载QSS文件

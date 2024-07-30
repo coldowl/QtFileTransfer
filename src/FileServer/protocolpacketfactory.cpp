@@ -47,7 +47,6 @@ void ProtocolPacketFactory::wrapDataPacket(const QByteArray &dataPacket) {
 
 // 解协议包，解出（ID+DATA）
 void ProtocolPacketFactory::parseProtocolPacket(const QByteArray &data) {
-    qDebug() << "正在执行parseProtocolPacket";
 
     // Step (2) 将数据包追加到缓存
     buffer.append(data);
@@ -99,7 +98,7 @@ void ProtocolPacketFactory::parseProtocolPacket(const QByteArray &data) {
         // 送数据包去解析
         QByteArray dataPacket = packet.mid(4, len-5);
         // qDebug() << dataPacket.toHex();
-        qDebug() << "发射parsedDataPacket";
+
         emit parsedDataPacket(dataPacket);
 
 

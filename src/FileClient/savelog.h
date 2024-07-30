@@ -7,6 +7,8 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QDir>
+#include <QDateTime>
+#include <iostream> // 使用标准输出
 
 class SaveLog : public QObject {
     Q_OBJECT
@@ -19,17 +21,18 @@ public:
     void save(const QString &message) {
         QMutexLocker locker(&mutex);
         if (!logFile.isOpen()) {
-            QString logDirPath = QDir::currentPath() + "/log";
+            QString logDirPath = "./../logs";
             if (!QDir().exists(logDirPath)) {
                 if (!QDir().mkdir(logDirPath)) {
+                    std::cerr << "无法创建日志文件夹: " << logDirPath.toStdString() << std::endl;
                     return;
                 }
             }
 
-            logFile.setFileName(logDirPath + "/log.txt");
+            logFile.setFileName(logDirPath + "/" + QDateTime::currentDateTime().toString("yyyyMMddhhmmss.log"));
             if (!logFile.open(QIODevice::Append | QIODevice::Text)) {
+                std::cerr << "无法打开日志文件: " << logFile.fileName().toStdString() << std::endl;
                 return;
-            } else {
             }
         }
         QTextStream out(&logFile);
@@ -57,7 +60,7 @@ public:
 
 private:
     SaveLog() : useContext(true) {
-        QString logDirPath = QDir::currentPath() + "/log";
+        QString logDirPath = "./../logs";
         if (!QDir().exists(logDirPath)) {
             QDir().mkdir(logDirPath);
         }
@@ -86,8 +89,6 @@ private:
         case QtFatalMsg:
             content = QString("[FATAL] %1").arg(msg);
             abort();
-        case QtInfoMsg:
-            break;
         }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))

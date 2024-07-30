@@ -34,11 +34,11 @@ void FileClient::requestFileList() {
 
 // 请求文件树
 void FileClient::requestFileTree(){
-    qDebug() << "正在执行requestFileTree";
+    // qDebug() << "正在执行requestFileTree";
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
     out << static_cast<ushort>(GET_FILE_TREE);
-    qDebug() << "发送信号readyForWrap";
+    // qDebug() << "发送信号readyForWrap";
     emit readyForWrap(request);
 }
 
@@ -60,7 +60,7 @@ void FileClient::requestUpload(const QString &filePath){
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
 
-    qDebug() << "REQUEST_UPLOAD_FILE" << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
+    // qDebug() << "REQUEST_UPLOAD_FILE" << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
     out << static_cast<ushort>(REQUEST_UPLOAD_FILE) << fileInfo.fileName() << fileInfo.size() << QString(fileHash);
 
     emit readyForWrap(request);
@@ -80,7 +80,7 @@ void FileClient::requestDownload(const QString &fileName){
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
 
-    qDebug() << static_cast<ushort>(REQUEST_DOWNLOAD_FILE) << fileName;
+    // qDebug() << static_cast<ushort>(REQUEST_DOWNLOAD_FILE) << fileName;
     out << static_cast<ushort>(REQUEST_DOWNLOAD_FILE) << fileName;
     emit readyForWrap(request);
 }
@@ -90,7 +90,7 @@ void FileClient::requestDelete(const QString &fileName){
     QByteArray request;
     QDataStream out(&request,QIODevice::WriteOnly);
 
-    qDebug() << "REQUEST_DELETE_FILE" << fileName;
+    // qDebug() << "REQUEST_DELETE_FILE" << fileName;
     out << static_cast<ushort>(REQUEST_DELETE_FILE) << fileName;
     emit readyForWrap(request);
 }
@@ -116,12 +116,12 @@ void FileClient::uploadFile(){
         QByteArray chunk = fileData.mid(bytesSent, 50000);
 
         out << static_cast<ushort>(UPLOAD_FILE) << chunk;
-        qDebug() << ++count << "UPLOAD_FILE";
+        // qDebug() << ++count << "UPLOAD_FILE";
 
         bytesSent += chunk.size();
         emit bytesAlreadySent(bytesSent); // 给文件传输窗口
 
-        qDebug() << "已发送" << bytesSent;
+        // qDebug() << "已发送" << bytesSent;
 
         emit readyForWrap(packet);
     }
@@ -132,7 +132,7 @@ void FileClient::uploadFile(){
 void FileClient::prepareForFileDownload(QByteArray data){
     QDataStream in(&data, QIODevice::ReadOnly);
     in >> m_downloadFileName >> m_downloadFileSize >> m_downloadFileHash;
-    qDebug() << m_downloadFileName << m_downloadFileSize << m_downloadFileHash;
+    // qDebug() << m_downloadFileName << m_downloadFileSize << m_downloadFileHash;
 
     // 发射信号给传输进度窗口
     QByteArray basicInfo;
@@ -154,7 +154,7 @@ void FileClient::prepareForFileDownload(QByteArray data){
         QDataStream out(&request, QIODevice::WriteOnly);
         out.setVersion(QDataStream::Qt_5_15); // 确保数据流版本匹配
 
-        qDebug() << "send: RECEIVE_FILE_READY";
+        // qDebug() << "send: RECEIVE_FILE_READY";
         out << static_cast<ushort>(RECEIVE_FILE_READY); // 指令字 RECEIVE_FILE_READY
 
         emit readyForWrap(request);
@@ -185,7 +185,7 @@ void FileClient::receiveDownload(QByteArray data){
     emit bytesAlreadyRcv(m_downloadBytesReceived); // 给文件传输窗口
 
     count = ceil((double)m_downloadBytesReceived / 50000);
-    qDebug() << count << m_downloadBytesReceived << m_downloadFileSize;
+    // qDebug() << count << m_downloadBytesReceived << m_downloadFileSize;
     if (m_downloadBytesReceived == m_downloadFileSize) {
 
         m_downloadBytesReceived = 0;
@@ -196,11 +196,11 @@ void FileClient::receiveDownload(QByteArray data){
         QByteArray fileData = file.readAll();
         file.close();
         QByteArray fileHash = QCryptographicHash::hash(fileData, QCryptographicHash::Sha256).toHex();
-        qDebug() << QString(fileHash);
+        // qDebug() << QString(fileHash);
         if (QString(fileHash) == m_downloadFileHash) {
             out << static_cast<ushort>(DOWNLOAD_COMPLETE);
         } else {
-            qWarning("File hash mismatch");
+            qWarning("文件不匹配");
         }
         emit readyForWrap(command);
     }

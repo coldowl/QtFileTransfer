@@ -37,7 +37,7 @@ void ProtocolPacketFactory::wrapDataPacket(const QByteArray &dataPacket) {
     // 将累加和添加到结果的末尾
     stream << SUMCHECK;
 
-    qDebug() << "发射wrappedProtocolPacket";
+    // qDebug() << "发射wrappedProtocolPacket";
     emit wrappedProtocolPacket(result);
 
 }
@@ -96,7 +96,7 @@ void ProtocolPacketFactory::parseProtocolPacket(const QByteArray &data) {
         // 送数据包去解析
         QByteArray dataPacket = packet.mid(4, len-5);
         // qDebug() << dataPacket.toHex();
-        qDebug() << "发射parsedDataPacket";
+        // qDebug() << "发射parsedDataPacket";
         emit parsedDataPacket(dataPacket);
 
 
