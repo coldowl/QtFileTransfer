@@ -393,6 +393,7 @@ void MainWindow::setConnect(){
     connect(m_fileClient, &FileClient::bytesAlreadySent, m_syncFileFileTransferUI, &SyncFileTransferUI::updateProgress);
     connect(m_fileClient, &FileClient::downloadedFileInfo,m_syncFileFileTransferUI, &SyncFileTransferUI::updateFileInfo);
     connect(m_fileClient, &FileClient::bytesAlreadyRcv, m_syncFileFileTransferUI, &SyncFileTransferUI::updateProgress);
+    connect(m_fileClient, &FileClient::timeStarted, m_syncFileFileTransferUI, &SyncFileTransferUI::onTimeStarted);
 
     connect(m_syncFileFileTransferUI, &SyncFileTransferUI::fileInfoUpdated, m_fileTransferWidget, &FileTransferWidget::setFileInfo);
     connect(m_syncFileFileTransferUI, &SyncFileTransferUI::progressUpdated, m_fileTransferWidget, &FileTransferWidget::setProgress);

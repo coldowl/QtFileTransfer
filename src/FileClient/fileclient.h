@@ -4,7 +4,7 @@
 
 #include "tcpclient.h"
 #include <QString>
-// #include <QRunnable>
+#include <QElapsedTimer>
 #include <QStandardItem>
 #include <QTcpSocket>
 #include <QTreeView>
@@ -58,6 +58,8 @@ public:
     void init();
 
 signals:
+    void timeStarted(const QElapsedTimer &timer);
+
     // “上传文件”的信息
     void uploadedFileInfo(const QByteArray &info);
 
@@ -97,7 +99,7 @@ private:
     void parseDirectory(QDataStream &in, QStandardItem *parentItem);
 
 private:
-
+    QElapsedTimer m_timer;
     TcpClient *m_tcpClient = nullptr;
     QTreeView *m_treeView = nullptr;
     QStandardItemModel *m_model = nullptr;

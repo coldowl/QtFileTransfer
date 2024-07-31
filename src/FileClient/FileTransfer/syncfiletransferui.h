@@ -1,6 +1,7 @@
 #ifndef SYNCFILETRANSFERUI_H
 #define SYNCFILETRANSFERUI_H
 
+#include <QElapsedTimer>
 #include <QObject>
 #include <QQueue>
 
@@ -23,13 +24,18 @@ signals:
     void speedUpdated(double speed);
     void finishTimeUpdated(double time);
 
+public slots:
+    void onTimeStarted(const QElapsedTimer &timer);
+
 private:
 
+    QElapsedTimer m_timer;
     QString m_fileName = nullptr;
     qint64 m_totalFileSize = 0;
+    qint64 m_previousBytesSent = 0;
+    qint64 m_previousElapsedTime = 0;
     // qint64 m_bytesent;
 
-    QQueue <qint64> m_bytesQueue;
 };
 
 #endif // SYNCFILETRANSFERUI_H

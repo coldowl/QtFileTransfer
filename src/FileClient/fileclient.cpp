@@ -109,6 +109,7 @@ void FileClient::uploadFile(){
     qint64 bytesSent = 0;
     int count = 0;
     int totalSize = fileData.size();
+    m_timer.restart();
 
     while (bytesSent < fileData.size()) {
         QByteArray packet;
@@ -121,7 +122,7 @@ void FileClient::uploadFile(){
         bytesSent += chunk.size();
         emit bytesAlreadySent(bytesSent); // 给文件传输窗口
 
-        // qDebug() << "已发送" << bytesSent;
+        emit timeStarted(m_timer);
 
         emit readyForWrap(packet);
     }
