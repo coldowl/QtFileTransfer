@@ -56,6 +56,8 @@ private slots:
 
     void processNextState();
 
+    void onTreeViewItemClicked(const QModelIndex &index);
+
     void initUi();
     void threadHandle();
     void setConnect();
@@ -70,6 +72,8 @@ signals:
     void requestFileTree();
     void requestDelete(QString fileName);
     void requestDownload(QString fileName);
+    void readyForDownload();
+    void readyForDelete();
 
 private:
     Ui::MainWindow *ui;

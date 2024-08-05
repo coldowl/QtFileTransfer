@@ -29,10 +29,12 @@ CONFIG(release,debug|release){
 DEFINES += QT_MESSAGELOGCONTEXT
 
 INCLUDEPATH += $$PWD/FileTransfer
+INCLUDEPATH += $$PWD/delegate
 
 SOURCES += \
     FileTransfer/syncfiletransferui.cpp \
     datapacketfactory.cpp \
+    delegate/treeviewdelegate.cpp \
     fileclient.cpp \
     FileTransfer/filetransferwidget.cpp \
     main.cpp \
@@ -40,12 +42,12 @@ SOURCES += \
     mediator.cpp \
     protocolpacketfactory.cpp \
     tcpclient.cpp \
-    treeviewdelegate.cpp \
     udpclient.cpp
 
 HEADERS += \
     FileTransfer/syncfiletransferui.h \
     datapacketfactory.h \
+    delegate/treeviewdelegate.h \
     fileclient.h \
     FileTransfer/filetransferwidget.h \
     mainwindow.h \
@@ -53,7 +55,6 @@ HEADERS += \
     protocolpacketfactory.h \
     savelog.h \
     tcpclient.h \
-    treeviewdelegate.h \
     udpclient.h
 
 FORMS += \

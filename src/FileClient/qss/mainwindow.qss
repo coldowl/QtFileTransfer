@@ -3,6 +3,13 @@
     font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
 }
 
+/* OptionWidget */
+QWidget#optionWidget {
+    border: 1px solid #d0d0d0;
+    border-radius: 5px;
+}
+
+
 /* TreeView */
 QTreeView {
     border: 1px solid #d0d0d0;
@@ -12,6 +19,9 @@ QTreeView::item:hover {
 
 }
 QTreeView::item:selected {
+}
+QTreeView::item:first-column {
+    max-width: 250px;
 }
 
 QScrollBar {

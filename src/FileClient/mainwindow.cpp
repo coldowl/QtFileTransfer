@@ -140,13 +140,13 @@ void MainWindow::on_refreshButton_clicked(){
 
 void MainWindow::on_actDelete_triggered(){
     QModelIndex index = ui->treeView_2->currentIndex();
-    // qDebug() << "触发删除，当前索引:" << index;
+    qDebug() << "触发删除，当前索引:" << index;
     if (index.isValid()) {
-        QAbstractItemModel *model = ui->treeView_2->model();
-        QString fileName = model->data(index, Qt::DisplayRole).toString();
+        QModelIndex siblingIndex = index.sibling(index.row(), 0); // 获取同一行的第一列项
+        QString fileName = siblingIndex.data().toString();
         // qDebug() << "Selected file:" << fileName;
-        // 调用请求删除函数并传递文件名作为参数
-        emit requestDelete(fileName);
+
+        emit requestDelete(fileName); // 调用请求删除函数并传递文件名作为参数
         // m_fileClient->requestDelete(fileName);
 
     } else {
@@ -156,14 +156,14 @@ void MainWindow::on_actDelete_triggered(){
 
 void MainWindow::on_actDownload_triggered() {
     QModelIndex index = ui->treeView_2->currentIndex();
-    // qDebug() << "触发下载，当前索引:" << index;
+    qDebug() << "触发下载，当前索引:" << index;
     if (index.isValid()) {
-        QAbstractItemModel *model = ui->treeView_2->model();
-        QString fileName = model->data(index, Qt::DisplayRole).toString();
-        // qDebug() << "已选择文件:" << fileName;
-        // 调用请求下载函数并传递文件名作为参数
-        emit requestDownload(fileName);
-        // m_fileClient->requestDownload(fileName);
+        QModelIndex siblingIndex = index.sibling(index.row(), 0); // 获取同一行的第一列项
+        QString fileName = siblingIndex.data().toString();
+        // qDebug() << "Selected file:" << fileName;
+
+
+        emit requestDownload(fileName); // 调用请求下载函数并传递文件名作为参数
         bool isUpload = false;
         m_fileTransferWidget->setPartiesName(isUpload);
         m_fileTransferWidget->show();
@@ -216,6 +216,27 @@ void MainWindow::processNextState() {
     }
 }
 
+// 处理Treeview2的删除、下载操作
+void MainWindow::onTreeViewItemClicked(const QModelIndex &index)
+{
+    if (index.column() == 1) { // 下载
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "确认下载", "你确定要下载这个文件吗？",QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
+            emit readyForDownload();
+        }
+    }
+    else if (index.column() == 2) { // 删除
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "确认删除", "你确定要删除这个文件吗？",QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
+            emit readyForDelete();
+        }
+    }
+}
+
+
+
 void MainWindow::initUi(){
     // 加载QSS文件
     qApp->setStyleSheet("file:///:/qss/mainwindow.qss");
@@ -231,7 +252,7 @@ void MainWindow::initUi(){
     ui->treeView->setModel(m_model);
     ui->treeView->setHeaderHidden(true);
     ui->treeView_2->setHeaderHidden(true);
-    ui->treeView_2->setItemDelegate(new TreeViewDelegate(ui->treeView_2));
+    // ui->treeView_2->setItemDelegate(new TreeViewDelegate(ui->treeView_2));
 
     QList<int> columnsToHide = {1, 2, 3};  // 定义一个需要隐藏的列的列表
     for (int column : columnsToHide) {  // 使用循环来隐藏列
@@ -312,6 +333,9 @@ void MainWindow::threadHandle(){
 }
 
 void MainWindow::setConnect(){
+
+    connect(ui->treeView_2, &QTreeView::clicked, this, &MainWindow::onTreeViewItemClicked);
+
     // 使用信号槽确保在 init 之后再调用成员方法
     connect(this, &MainWindow::startTcpConnect, m_tcpClient, &TcpClient::connectToServer);
     connect(this, &MainWindow::startUdpConnect, m_udpClient, &UdpClient::setConnectInfo);
@@ -321,6 +345,9 @@ void MainWindow::setConnect(){
     connect(this, &MainWindow::requestFileTree, m_fileClient, &FileClient::requestFileTree);
     connect(this, &MainWindow::requestDelete, m_fileClient, &FileClient::requestDelete);
     connect(this, &MainWindow::requestDownload, m_fileClient, &FileClient::requestDownload);
+
+    connect(this, &MainWindow::readyForDownload, this, &MainWindow::on_actDownload_triggered);
+    connect(this, &MainWindow::readyForDelete, this, &MainWindow::on_actDelete_triggered);
 
     // 协议选择
     connect(m_protocolComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onProtocolChanged);
@@ -353,6 +380,7 @@ void MainWindow::setConnect(){
         QStandardItem *rootItem = model->invisibleRootItem()->child(0); // 获取根项（顶级文件夹）
         ui->lineEdit->setText(rootItem->text());
         ui->treeView_2->expandAll(); // 展开所有项以确保视图更新
+        ui->treeView_2->header()->setSectionResizeMode(QHeaderView::ResizeToContents); // 确保 treeView 显示多列
     });
 
 

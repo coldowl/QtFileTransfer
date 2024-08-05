@@ -215,6 +215,9 @@ void FileClient::dealFileTree(QByteArray data){
     in >> rootPath; // 读取根路径
 
     m_model->clear(); // 清除现有的model数据
+
+    m_model->setHorizontalHeaderLabels({"文件名", "操作1", "操作2"}); // 设置表头
+
     QStandardItem *rootItem = new QStandardItem(rootPath);
     m_model->appendRow(rootItem); // 将根路径添加到model中
 
@@ -230,11 +233,12 @@ void FileClient::dealFileList(QByteArray data){
     in >> fileCount; // 读取文件数量
 
     m_model->clear(); // 清除现有的model数据
+
     for (int i = 0; i < fileCount; ++i) {
         QString fileName;
         in >> fileName; // 读取每个文件名
-        QStandardItem *item = new QStandardItem(fileName);
-        m_model->appendRow(item); // 将文件名添加到model中
+        QStandardItem *fileItem = new QStandardItem(fileName);
+        m_model->appendRow(fileItem); // 将文件名添加到model中
     }
 }
 
@@ -249,11 +253,16 @@ void FileClient::parseDirectory(QDataStream &in, QStandardItem *parentItem){
         bool isDir;
         in >> fileName >> isDir; // 读取文件或子目录名称和是否是目录
 
-        QStandardItem *item = new QStandardItem(fileName);
-        parentItem->appendRow(item); // 将文件或子目录添加到model中
+        QStandardItem *fileItem = new QStandardItem(fileName);
+        QStandardItem *deleteItem = new QStandardItem("[删除]");
+        // deleteItem->setIcon(QIcon(":/icons/delete.png"));
+        QStandardItem *downloadItem = new QStandardItem("[下载]");
+        // downloadItem->setIcon(QIcon(":/icons/download.png"));
+
+        parentItem->appendRow({fileItem, downloadItem, deleteItem}); // 将文件或子目录添加到model中
 
         if (isDir) {
-            parseDirectory(in, item); // 如果是目录，递归解析子目录结构
+            parseDirectory(in, fileItem); // 如果是目录，递归解析子目录结构
         }
     }
 }
