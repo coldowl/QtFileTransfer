@@ -82,9 +82,9 @@ The project includes a file client and a file server. The client and server comm
 
 ## 📝 Note 
 
-This is a practice project. While it includes fundamental functionalities, it is not intended for production use. ⚠️
+This is a practice project. While it includes fundamental functionalities, it is not intended for production use.
 
 ## 📜 License 
 
-This project is open-source and free to use under the MIT License. Feel free to contribute and enhance its functionalities! 🎉
+This project is open-source and free to use under the MIT License. Feel free to contribute and enhance its functionalities!
 
